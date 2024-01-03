@@ -1,1 +1,9 @@
 .env
+
+# FILEPATH: /Users/gopikrishnansasikumar/projects/peopleplus/Mr-Nags/.gitignore
+# BEGIN: python-gitignore
+*.pyc
+__pycache__/
+venv/
+*.env
+# END: python-gitignore
