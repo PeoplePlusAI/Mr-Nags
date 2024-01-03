@@ -45,7 +45,16 @@ raise_complaint ={
             "service_code": {
                 "type": "string",
                 "description": "service code of complaint extracted from description",
-                "enum": ["GarbageNeedsTobeCleared", "NoStreetLight"]
+                "enum": [
+                    "GarbageNeedsTobeCleared", "NoStreetLight", "StreetLightNotWorking",
+                    "BurningOfGarbage", "OverflowingOrBlockedDrain", "illegalDischargeOfSewage",
+                    "BlockOrOverflowingSewage", "ShortageOfWater", "DirtyWaterSupply", "BrokenWaterPipeOrLeakage",
+                    "WaterPressureisVeryLess", "HowToPayPT", "WrongCalculationPT", "ReceiptNotGenerated",
+                    "DamagedRoad", "WaterLoggedRoad", "ManholeCoverMissingOrDamaged", "DamagedOrBlockedFootpath",
+                    "ConstructionMaterialLyingOntheRoad", "RequestSprayingOrFoggingOperation", "StrayAnimals", "DeadAnimals",
+                    "DirtyOrSmellyPublicToilets", "PublicToiletIsDamaged", "NoWaterOrElectricityinPublicToilet", "IllegalShopsOnFootPath",
+                    "IllegalConstructions", "IllegalParking"
+                ]
             },
             "auth_token": {
                 "type": "string",

@@ -73,7 +73,9 @@ def chat(chat_id, input_message):
 
         for tool in tools_to_call:
             func_name = tool.function.name
+            print(f"Function name: {func_name}")
             parameters = json.loads(tool.function.arguments)
+            print(f"Parameters: {parameters}")
 
             tool_output_array = []
 
