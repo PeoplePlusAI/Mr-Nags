@@ -173,3 +173,11 @@ def get_assistant_message(client, thread_id):
         thread_id=thread_id,
     )
     return messages.data[0].content[0].text.value
+
+
+def transcribe_audio(audio_file, client):
+    transcript = client.audio.transcriptions.create(
+        model="whisper-1", 
+        file=audio_file
+    )
+    return transcript.text
