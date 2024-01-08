@@ -5,7 +5,8 @@ from utils.openai_utils import (
     upload_message,
     get_run_status,
     get_assistant_message,
-    create_assistant
+    create_assistant,
+    transcribe_audio
 )
 from utils.redis_utils import (
     get_redis_value,
@@ -69,7 +70,11 @@ def chat(chat_id, input_message):
         set_redis(chat_id, history)
     
     if status == "requires_action":
-        tools_to_call = run.required_action.submit_tool_outputs.tool_calls
+        if run:
+            tools_to_call = run.required_action.submit_tool_outputs.tool_calls
+        else:
+            run, status = get_run_status(run, client, thread)
+            tools_to_call = run.required_action.submit_tool_outputs.tool_calls
 
         for tool in tools_to_call:
             func_name = tool.function.name
@@ -138,4 +143,11 @@ def chat(chat_id, input_message):
                 else:
                     return "Complaint failed", history
                 
+    return assistant_message, history
+
+
+def audio_chat(chat_id, audio_file):
+    input_message = transcribe_audio(audio_file, client)
+    print(f"The input message is : {input_message}")
+    assistant_message, history =  chat(chat_id, input_message)
     return assistant_message, history
