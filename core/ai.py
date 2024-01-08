@@ -1,5 +1,9 @@
 from openai import OpenAI
-from utils.digit_utils import get_auth_token, file_complaint
+from utils.digit_utils import (
+    get_auth_token, 
+    file_complaint, 
+    search_complaint
+)
 from utils.openai_utils import (
     create_thread,
     upload_message,
@@ -142,6 +146,35 @@ def chat(chat_id, input_message):
                     return message, history
                 else:
                     return "Complaint failed", history
+                
+            elif func_name == "search_complaint":
+                complaint = search_complaint(parameters)
+                if complaint:
+                    tool_output_array.append(
+                        {
+                            "tool_call_id": tool.id,
+                            "output": complaint["ServiceWrappers"][0]["service"]["applicationStatus"]
+                        }
+                    )
+                    run = client.beta.threads.runs.submit_tool_outputs(
+                        thread_id=thread.id,
+                        run_id=run.id,
+                        tool_outputs=tool_output_array
+                    )
+                    run, status = get_run_status(run, client, thread)
+
+                    message = get_assistant_message(client, thread.id)
+
+                    history = {
+                        "thread_id": thread.id,
+                        "run_id": run.id,
+                        "status": status,
+                    }
+                    history = json.dumps(history)
+                    set_redis(chat_id, history)
+                    return message, history
+                else:
+                    return "Complaint not found", history
                 
     return assistant_message, history
 

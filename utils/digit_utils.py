@@ -85,3 +85,50 @@ def file_complaint(data):
         print(response.content)
         print(f"Error: {response.status_code}")
         return None
+    
+def search_complaint(data):
+    headers = {'Content-Type': 'application/json'}
+    mobile_number = data["username"]
+    url = f"https://staging.digit.org/pgr-services/v2/request/_search?tenantId=pg.cityb&mobileNumber={mobile_number}&_=1704443852959"
+
+    data = {
+        "RequestInfo":{
+            "apiId":"Rainmaker",
+            "authToken":data["auth_token"],
+            "userInfo":{
+                "id":2079,
+                "uuid":"7e2b023a-2f7f-444c-a48e-78d75911387a",
+                "userName":data["username"],
+                "name":data["name"],
+                "mobileNumber":data["username"],
+                "emailId":"",
+                "locale":None,
+                "type":"CITIZEN",
+                "roles":[
+                    {
+                        "name":"Citizen",
+                        "code":"CITIZEN",
+                        "tenantId":"pg"
+                    }
+                ],
+                "active":True,
+                "tenantId":"pg",
+                "permanentCity":"pg.cityb"
+            },
+            "msgId":"1704443852959|en_IN",
+            "plainAccessRequest":{}
+        }
+    }
+
+    response = requests.post(url, headers=headers, data=json.dumps(data))
+
+    if response.status_code == 200:
+        response_data = response.json()
+        return response_data
+    else:
+        print(response.content)
+        print(f"Error: {response.status_code}")
+        return None
+
+    
+

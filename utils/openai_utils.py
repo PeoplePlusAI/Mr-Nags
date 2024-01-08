@@ -113,6 +113,33 @@ raise_complaint ={
     },
 }
 
+search_complaint = {
+    "name": "search_complaint",
+    "description": "Search complaint",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "auth_token": {
+                "type": "string",
+                "description": "Authentication token of user"
+            },
+            "username": {
+                "type": "string",
+                "description": "username of user"
+            },
+            "name": {
+                "type": "string",
+                "description": "name of user"
+            },
+            "mobile_number": {
+                "type": "string",
+                "description": "mobile number of user"
+            },
+        },
+        "required": ["auth_token", "username", "name", "mobile_number"]
+    }
+}
+
 def create_assistant(client, assistant_id):
     try:
         assistant = client.beta.assistants.retrieve(assistant_id=assistant_id)
@@ -130,6 +157,10 @@ def create_assistant(client, assistant_id):
                 {
                     "type": "function",
                     "function": raise_complaint
+                },
+                {
+                    "type": "function",
+                    "function": search_complaint
                 }
             ]
         )
