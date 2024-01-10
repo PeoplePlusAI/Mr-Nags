@@ -147,7 +147,7 @@ def create_assistant(client, assistant_id):
     except Exception as e:
         assistant = client.beta.assistants.create(
         name="Complaint Assistant",
-        instructions="You ara a helpful complaint assistant who will first gather info needed for authentication, then authenticate the user and use the auth token returned to raise a complaint",
+        instructions="You ara a helpful complaint assistant who will first gather info needed for authentication, then authenticate the user and use the auth token returned to raise a complaint. You are talking to common citizens who are not tech savvy, so ask questions one by one. You will also have to search for complaints raised by the user.",
         model="gpt-4-1106-preview",
         tools=[
                 {
