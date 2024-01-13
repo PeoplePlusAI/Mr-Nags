@@ -39,7 +39,7 @@ Mr Nags is a complaint filing chatbot using egov digit platform.
 1. To start a conversation with the bot, start having a conversation by saying hey, hello or I have a complaint
 2. The bot will ask you to describe your complaint
 3. Once you have described your complaint, the bot will file the complaint and give you your complaint number.
-4. Todo: You can use the complaint number to check the status of your complaint. 
+4. Todo: Map Location details from chat to the proper parameters in digit API call(s). 
 
 
 
