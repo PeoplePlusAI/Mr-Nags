@@ -1,6 +1,14 @@
+from dotenv import load_dotenv
 import redis
+import os
 
-redis_client = redis.Redis(host='localhost', port=6379, db=0)
+load_dotenv(
+    dotenv_path="ops/.env"
+)
+
+REDIS_HOST = os.getenv("REDIS_HOST")
+
+redis_client = redis.Redis(host=REDIS_HOST, port=6379, db=0)
 
 def get_redis_value(key):
     return redis_client.get(key)
