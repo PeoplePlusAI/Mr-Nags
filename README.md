@@ -15,17 +15,18 @@ Mr Nags is a complaint filing chatbot using egov digit platform.
     ```
 2. For normal running
 
-2.1 Run the following commands:
+    Run the following commands:
     ```
     pip install -r requirements.txt
     ```
-2.2 Once the installaton is complete, run the following command to start the bot:
+    Once the installaton is complete, run the following command to start the bot:
     ```
     python main.py
     ```
 
-(For docker running)
-3. Run the following command to start the bot:
+3. For docker running
+    
+    Run the following command to start the bot:
     ```
     docker-compose up
     ```
