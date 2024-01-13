@@ -80,14 +80,14 @@ raise_complaint ={
                 "type": "string",
                 "description": "locality of complaint"
             },
-            "username": {
-                "type": "string",
-                "description": "username of user"
-            },
-            "password": {
-                "type": "string",
-                "description": "password of user"
-            },
+            #"username": {
+            #    "type": "string",
+            #    "description": "username of user"
+            #},
+            #"password": {
+            #    "type": "string",
+            #    "description": "password of user"
+            #},
             "name": {
                 "type": "string",
                 "description": "name of user"
@@ -123,10 +123,10 @@ search_complaint = {
                 "type": "string",
                 "description": "Authentication token of user"
             },
-            "username": {
-                "type": "string",
-                "description": "username of user"
-            },
+            #"username": {
+            #    "type": "string",
+            #    "description": "username of user"
+            #},
             "name": {
                 "type": "string",
                 "description": "name of user"
@@ -147,13 +147,13 @@ def create_assistant(client, assistant_id):
     except Exception as e:
         assistant = client.beta.assistants.create(
         name="Complaint Assistant",
-        instructions="You ara a helpful complaint assistant who will first gather info needed for authentication, then authenticate the user and use the auth token returned to raise a complaint. You are talking to common citizens who are not tech savvy, so ask questions one by one. You will also have to search for complaints raised by the user.",
+        instructions="You ara a helpful complaint assistant who will collect information about a complaint and raise the complaint. You are talking to common citizens who are not tech savvy, so ask questions one by one. You will also have to search for complaints raised by the user.",
         model="gpt-4-1106-preview",
         tools=[
-                {
-                    "type": "function",
-                    "function": authenticate_user
-                },
+                #{
+                #    "type": "function",
+                #    "function": authenticate_user
+                #},
                 {
                     "type": "function",
                     "function": raise_complaint

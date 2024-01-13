@@ -28,7 +28,11 @@ load_dotenv(
 
 openai_api_key = os.getenv("OPENAI_API_KEY")
 
+USERNAME = os.getenv("USERNAME")
+PASSWORD = os.getenv("PASSWORD")
+
 assistant_id = get_redis_value("assistant_id")
+print(assistant_id)
 
 client = OpenAI(
     api_key=openai_api_key,
@@ -81,13 +85,22 @@ def chat(chat_id, input_message):
             tools_to_call = run.required_action.submit_tool_outputs.tool_calls
 
         for tool in tools_to_call:
+            username = USERNAME
+            auth_token = get_auth_token(
+                {
+                    "username": username,
+                    "password": PASSWORD
+                }
+            )
             func_name = tool.function.name
             print(f"Function name: {func_name}")
             parameters = json.loads(tool.function.arguments)
+            parameters["auth_token"] = auth_token
+            parameters["username"] = username
             print(f"Parameters: {parameters}")
 
             tool_output_array = []
-
+            """
             if func_name == "authenticate_user":
                 auth_token = get_auth_token(parameters)
                 if auth_token:
@@ -116,9 +129,9 @@ def chat(chat_id, input_message):
                     return message, history
                 else:
                     return "Authentication failed", history
+                """
 
-
-            elif func_name == "raise_complaint":
+            if func_name == "raise_complaint":
                 complaint = file_complaint(parameters)
                 if complaint:
                     tool_output_array.append(
