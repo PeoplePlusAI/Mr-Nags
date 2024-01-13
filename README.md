@@ -9,17 +9,28 @@ Mr Nags is a complaint filing chatbot using egov digit platform.
     ```
     OPENAI_API_KEY=<OPENAI_API_KEY>
     TELEGRAM_BOT_TOKEN=<TELEGRAM BOT TOKEN>
+    REDIS_HOST=redis
+    USERNAME=<digit-username>
+    PASSWORD=<digit-password>
     ```
+2. For normal running
 
-2. Run the following commands:
+2.1 Run the following commands:
     ```
     pip install -r requirements.txt
     ```
-3. Once the installaton is complete, run the following command to start the bot:
+2.2 Once the installaton is complete, run the following command to start the bot:
     ```
     python main.py
     ```
+    
+(For docker running)
+3. Run the following command to start the bot:
+    ```
+    docker-compose up
+    ```
 4. Open Telegram and search for `@YourBotName` and start chatting with the bot.
+
 
 
 ## Usage
