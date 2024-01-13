@@ -5,7 +5,7 @@ Mr Nags is a complaint filing chatbot using egov digit platform.
 
 ## Installation
 
-1. Create a file `ops/.env` and add the following lines to it:
+1. Create a file `.env` inside `ops` directory and add the following lines to it:
     ```
     OPENAI_API_KEY=<OPENAI_API_KEY>
     TELEGRAM_BOT_TOKEN=<TELEGRAM BOT TOKEN>
