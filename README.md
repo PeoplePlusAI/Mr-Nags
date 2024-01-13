@@ -9,7 +9,7 @@ Mr Nags is a complaint filing chatbot using egov digit platform.
     ```
     OPENAI_API_KEY=<OPENAI_API_KEY>
     TELEGRAM_BOT_TOKEN=<TELEGRAM BOT TOKEN>
-    REDIS_HOST=redis
+    REDIS_HOST=redis (localhost if running locally without docker)
     USERNAME=<digit-username>
     PASSWORD=<digit-password>
     ```
@@ -23,7 +23,7 @@ Mr Nags is a complaint filing chatbot using egov digit platform.
     ```
     python main.py
     ```
-    
+
 (For docker running)
 3. Run the following command to start the bot:
     ```
