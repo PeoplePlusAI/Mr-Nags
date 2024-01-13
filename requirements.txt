@@ -1,5 +1,5 @@
 openai
 redis
 requests
-dotenv
+python-dotenv
 python-telegram-bot
