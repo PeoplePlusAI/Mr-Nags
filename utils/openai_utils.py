@@ -123,10 +123,6 @@ search_complaint = {
                 "type": "string",
                 "description": "Authentication token of user"
             },
-            #"username": {
-            #    "type": "string",
-            #    "description": "username of user"
-            #},
             "name": {
                 "type": "string",
                 "description": "name of user"
@@ -136,7 +132,7 @@ search_complaint = {
                 "description": "mobile number of user"
             },
         },
-        "required": ["auth_token", "username", "name", "mobile_number"]
+        "required": ["auth_token", "name", "mobile_number"]
     }
 }
 
