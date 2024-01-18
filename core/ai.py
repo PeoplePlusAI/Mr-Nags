@@ -60,22 +60,23 @@ def chat(chat_id, input_message):
         run = None
     try:
         thread = client.beta.threads.retrieve(thread_id)
+        thread_id = thread.id
     except Exception as e:
         thread = create_thread(client)
+        thread_id = thread.id
 
     if status == "completed" or status == None:
-        run = upload_message(client, thread.id, input_message, assistant.id)
+        run = upload_message(client, thread_id, input_message, assistant.id)
         run, status = get_run_status(run, client, thread)
 
-        assistant_message = get_assistant_message(client, thread.id)
+        assistant_message = get_assistant_message(client, thread_id)
 
         history = {
-            "thread_id": thread.id,
+            "thread_id": thread_id,
             "run_id": run.id,
             "status": status,
         }
-        history = json.dumps(history)
-        set_redis(chat_id, history)
+        set_redis(chat_id, json.dumps(history))
     
     if status == "requires_action":
         if run:
@@ -141,21 +142,20 @@ def chat(chat_id, input_message):
                         }
                     )
                     run = client.beta.threads.runs.submit_tool_outputs(
-                        thread_id=thread.id,
+                        thread_id=thread_id,
                         run_id=run.id,
                         tool_outputs=tool_output_array
                     )
                     run, status = get_run_status(run, client, thread)
 
-                    message = get_assistant_message(client, thread.id)
+                    message = get_assistant_message(client, thread_id)
 
                     history = {
                         "thread_id": thread.id,
                         "run_id": run.id,
                         "status": status,
                     }
-                    history = json.dumps(history)
-                    set_redis(chat_id, history)
+                    set_redis(chat_id, json.dumps(history))
                     return message, history
                 else:
                     return "Complaint failed", history
@@ -176,15 +176,14 @@ def chat(chat_id, input_message):
                     )
                     run, status = get_run_status(run, client, thread)
 
-                    message = get_assistant_message(client, thread.id)
+                    message = get_assistant_message(client, thread_id)
 
                     history = {
-                        "thread_id": thread.id,
+                        "thread_id": thread_id,
                         "run_id": run.id,
                         "status": status,
                     }
-                    history = json.dumps(history)
-                    set_redis(chat_id, history)
+                    set_redis(chat_id, json.dumps(history))
                     return message, history
                 else:
                     return "Complaint not found", history
