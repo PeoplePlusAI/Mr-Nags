@@ -11,6 +11,7 @@ from telegram.ext import (
 import os
 import dotenv
 import tempfile
+import asyncio
 
 dotenv.load_dotenv("ops/.env")
 
@@ -23,7 +24,7 @@ logging.basicConfig(
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
-    await context.bot.send_message(chat_id=chat_id, text="Hello I am Mr. Nags, start raising a complaint with hello I have a complaint")
+    await context.bot.send_message(chat_id=chat_id, text="Hello I am Mr. Nags, start raising a complaint with me")
 
 async def respond(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text
@@ -42,8 +43,6 @@ async def respond_audio(update: Update, context: ContextTypes.DEFAULT_TYPE):
         print(chat_id)
         response, history = audio_chat(chat_id, audio_file=open(temp_audio_file.name, "rb"))
         await context.bot.send_message(chat_id=update.effective_chat.id, text=response)
-
-
 
 if __name__ == '__main__':
     application = ApplicationBuilder().token(token).read_timeout(30).write_timeout(30).build()

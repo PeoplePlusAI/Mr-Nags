@@ -3,6 +3,10 @@ from utils.redis_utils import set_redis
 import time
 import os
 
+from utils.bhashini import (
+    bhashini_input,
+    bhashini_output,
+)
 
 load_dotenv(
     dotenv_path="ops/.env",
@@ -147,8 +151,8 @@ def create_assistant(client, assistant_id):
     except Exception as e:
         assistant = client.beta.assistants.create(
         name="Complaint Assistant",
-        instructions="You ara a helpful complaint assistant who will collect information about a complaint and raise the complaint. You are talking to common citizens who are not tech savvy, so ask questions one by one. You will also have to search for complaints raised by the user.",
-        model="gpt-4-1106-preview",
+        instructions="You are a helpful complaint assistant who will help in filing a complaint about urban civic issues. Ask for details whenever necessary and file the complaint using tools made available to you",
+        model="gpt-4",
         tools=[
                 #{
                 #    "type": "function",
@@ -172,6 +176,7 @@ def create_thread(client):
     return thread
 
 def upload_message(client, thread_id, input_message, assistant_id):
+    
     message = client.beta.threads.messages.create(
         thread_id=thread_id,
         role="user",
@@ -204,7 +209,6 @@ def get_assistant_message(client, thread_id):
         thread_id=thread_id,
     )
     return messages.data[0].content[0].text.value
-
 
 def transcribe_audio(audio_file, client):
     transcript = client.audio.transcriptions.create(
