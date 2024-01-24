@@ -1,5 +1,6 @@
+import asyncio
 import logging
-from core.ai import chat, audio_chat
+from core.ai import chat, audio_chat, bhashini_text_chat
 from telegram import Update
 from telegram.ext import (
     ApplicationBuilder,
@@ -11,7 +12,7 @@ from telegram.ext import (
 import os
 import dotenv
 import tempfile
-import asyncio
+import time
 
 dotenv.load_dotenv("ops/.env")
 
@@ -27,10 +28,15 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(chat_id=chat_id, text="Hello I am Mr. Nags, start raising a complaint with me")
 
 async def respond(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    #start_time = time.time()
     text = update.message.text
     chat_id = update.effective_chat.id
-    print(chat_id)
-    response, history = chat(chat_id, text)
+    #response, history = chat(chat_id, text)
+    # if input is in Punjabi, then 
+    response, history = bhashini_text_chat(chat_id,text)
+    #end_time = time.time()
+    #print(f"history status is {history.get('status')}")
+    #print(f"Time taken: {end_time - start_time}")
     await context.bot.send_message(chat_id=chat_id, text=response)
 
 async def respond_audio(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -47,6 +53,7 @@ async def respond_audio(update: Update, context: ContextTypes.DEFAULT_TYPE):
 if __name__ == '__main__':
     application = ApplicationBuilder().token(token).read_timeout(30).write_timeout(30).build()
     start_handler = CommandHandler('start', start)
+    # choose language -> then use Bhashini
     response_handler = MessageHandler(filters.TEXT & (~filters.COMMAND), respond)
     audio_handler = MessageHandler(filters.VOICE & (~filters.COMMAND), respond_audio)
     application.add_handler(response_handler)
