@@ -13,6 +13,7 @@ import os
 import dotenv
 import tempfile
 import time
+from tqdm import tqdm
 
 dotenv.load_dotenv("ops/.env")
 
@@ -23,21 +24,37 @@ logging.basicConfig(
     level=logging.INFO
 )
 
+async def progress_bar(context, chat_id, start_time, update_interval=15, max_duration=90):
+    while True:
+        await asyncio.sleep(update_interval)
+        wait_time = time.time() - start_time
+        if wait_time > max_duration:
+            break
+        await context.bot.send_message(caht_id=chat_id, text="Thank you for your patience. We're wokring on it.")
+
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
     await context.bot.send_message(chat_id=chat_id, text="Hello I am Mr. Nags, start raising a complaint with me")
 
 async def respond(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    #start_time = time.time()
-    text = update.message.text
+    start_time = time.time()
+    
     chat_id = update.effective_chat.id
-    #response, history = chat(chat_id, text)
-    # if input is in Punjabi, then 
+    text = update.message.text
+    
+    # await context.bot.send_message(chat_id=chat_id, text="We're starting the compliant process. Please wait...")
+    update_task = asyncio.create_task(progress_bar(context, chat_id, start_time))
+
     response, history = bhashini_text_chat(chat_id,text)
+    
+    await context.bot.send_message(chat_id=chat_id, text="Thank you for your patience.")
+    
+    update_task.cancel()
+
+    await context.bot.send_message(chat_id=chat_id, text=response)
     #end_time = time.time()
     #print(f"history status is {history.get('status')}")
     #print(f"Time taken: {end_time - start_time}")
-    await context.bot.send_message(chat_id=chat_id, text=response)
 
 async def respond_audio(update: Update, context: ContextTypes.DEFAULT_TYPE):
     audio_file = await context.bot.get_file(update.message.voice.file_id)

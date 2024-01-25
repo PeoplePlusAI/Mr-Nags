@@ -25,7 +25,9 @@ from utils.bhashini import (
 import json
 import time
 import os
-
+import time
+# from halo import Halo
+# from tqdm import tqdm
 from dotenv import load_dotenv
 
 load_dotenv(
@@ -45,6 +47,8 @@ client = OpenAI(
 )
 
 assistant = create_assistant(client, assistant_id)
+
+# for _ in tqdm(range(100), desc="Processing..."):
 
 def chat(chat_id, message):
     history = get_redis_value(chat_id)
@@ -187,5 +191,6 @@ def bhashini_text_chat(chat_id, text): #lang
 
     return output_message, history
 
-
-
+# to track time, one can use the following:
+# with Halo(text='Processing...', spinner='dots')
+# function code
