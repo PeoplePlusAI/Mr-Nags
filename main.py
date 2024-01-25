@@ -67,6 +67,18 @@ async def respond_audio(update: Update, context: ContextTypes.DEFAULT_TYPE):
         response, history = audio_chat(chat_id, audio_file=open(temp_audio_file.name, "rb"))
         await context.bot.send_message(chat_id=update.effective_chat.id, text=response)
 
+# for getting location,we can use this 
+'''async def location(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    """Stores the location and asks for some info about the user."""
+    user = update.message.from_user
+    user_location = update.message.location
+    logger.info(
+        "Location of %s: %f / %f", user.first_name, user_location.latitude, user_location.longitude
+    )
+    await update.message.reply_text(
+        "Since you're filing the complaint form your location, we're recording it."
+    )'''
+
 if __name__ == '__main__':
     application = ApplicationBuilder().token(token).read_timeout(30).write_timeout(30).build()
     start_handler = CommandHandler('start', start)
