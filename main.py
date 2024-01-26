@@ -35,6 +35,11 @@ async def respond(update: Update, context: ContextTypes.DEFAULT_TYPE):
     start_time = time.time()
     text = update.message.text
     chat_id = update.effective_chat.id
+    wait_message = get_random_wait_messages(
+        not_always=True
+    )
+    if wait_message:
+        await context.bot.send_message(chat_id=chat_id, text=wait_message)
     response, history = chat(chat_id, text)
     end_time = time.time()
     print(f"history status is {history.get('status')}")
@@ -50,8 +55,11 @@ async def respond_audio(update: Update, context: ContextTypes.DEFAULT_TYPE):
     with tempfile.NamedTemporaryFile(suffix='.wav', delete=True) as temp_audio_file:
         await audio_file.download_to_drive(custom_path=temp_audio_file.name)
         chat_id = update.effective_chat.id
-        wait_message = get_random_wait_messages()
-        await context.bot.send_message(chat_id=chat_id, text=wait_message)
+        wait_message = get_random_wait_messages(
+            not_always=True
+        )
+        if wait_message:
+            await context.bot.send_message(chat_id=chat_id, text=wait_message)
         response_audio, history = audio_chat(chat_id, audio_file=open(temp_audio_file.name, "rb"))
         response_audio.stream_to_file(temp_audio_file.name)
         duration = get_duration_pydub(temp_audio_file.name)

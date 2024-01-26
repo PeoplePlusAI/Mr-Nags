@@ -219,7 +219,7 @@ def get_duration_pydub(file_path):
    duration = audio_file.duration_seconds
    return duration
 
-def get_random_wait_messages():
+def get_random_wait_messages(not_always=False):
     messages = [
         "Please wait...",
         "I am thinking...",
@@ -228,4 +228,13 @@ def get_random_wait_messages():
         "I am on it...",
         "I am working on it...",
     ]
-    return random.choice(messages)
+    if not_always:
+        rand = random.randint(0, 2)
+        print(rand)
+        if rand == 1:
+            random_message = random.choice(messages)
+        else:
+            random_message = ""
+    else:
+        random_message = random.choice(messages)
+    return random_message
