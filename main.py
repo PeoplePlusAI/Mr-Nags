@@ -60,10 +60,18 @@ async def respond_audio(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         if wait_message:
             await context.bot.send_message(chat_id=chat_id, text=wait_message)
-        response_audio, history = audio_chat(chat_id, audio_file=open(temp_audio_file.name, "rb"))
+        response_audio, history = audio_chat(
+            chat_id, audio_file=open(temp_audio_file.name, "rb")
+        )
         response_audio.stream_to_file(temp_audio_file.name)
         duration = get_duration_pydub(temp_audio_file.name)
-        await context.bot.send_audio(chat_id=chat_id, audio=open(temp_audio_file.name, "rb"), duration=duration, filename="response.wav")
+        await context.bot.send_audio(
+            chat_id=chat_id, 
+            audio=open(temp_audio_file.name, "rb"), 
+            duration=duration, 
+            filename="response.wav",
+            performer="Mr. Nags",
+        )
 
 
 
