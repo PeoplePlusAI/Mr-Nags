@@ -1,5 +1,6 @@
 from dotenv import load_dotenv
 from utils.redis_utils import set_redis
+from pydub import AudioSegment
 import time
 import os
 
@@ -203,3 +204,16 @@ def transcribe_audio(audio_file, client):
         file=audio_file
     )
     return transcript.text
+
+def generate_audio(text, client):
+    response = client.audio.speech.create(
+                model="tts-1",
+                voice="alloy",
+                input=text
+            )
+    return response
+
+def get_duration_pydub(file_path):
+   audio_file = AudioSegment.from_file(file_path)
+   duration = audio_file.duration_seconds
+   return duration

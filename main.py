@@ -9,6 +9,7 @@ from telegram.ext import (
     CommandHandler, 
     filters,
 )
+from utils.openai_utils import get_duration_pydub
 import os
 import dotenv
 import tempfile
@@ -43,11 +44,13 @@ async def respond_audio(update: Update, context: ContextTypes.DEFAULT_TYPE):
     audio_file = await context.bot.get_file(update.message.voice.file_id)
 
     # Use a temporary file
-    with tempfile.NamedTemporaryFile(suffix='.ogg', delete=True) as temp_audio_file:
+    with tempfile.NamedTemporaryFile(suffix='.wav', delete=True) as temp_audio_file:
         await audio_file.download_to_drive(custom_path=temp_audio_file.name)
         chat_id = update.effective_chat.id
-        response, history = audio_chat(chat_id, audio_file=open(temp_audio_file.name, "rb"))
-        await context.bot.send_message(chat_id=update.effective_chat.id, text=response)
+        response_audio, history = audio_chat(chat_id, audio_file=open(temp_audio_file.name, "rb"))
+        response_audio.stream_to_file(temp_audio_file.name)
+        duration = get_duration_pydub(temp_audio_file.name)
+        await context.bot.send_audio(chat_id=chat_id, audio=open(temp_audio_file.name, "rb"), duration=duration, filename="response.wav")
 
 
 
