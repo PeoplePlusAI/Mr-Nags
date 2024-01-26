@@ -1,5 +1,6 @@
 from dotenv import load_dotenv
 from utils.redis_utils import set_redis
+import random
 from pydub import AudioSegment
 import time
 import os
@@ -217,3 +218,14 @@ def get_duration_pydub(file_path):
    audio_file = AudioSegment.from_file(file_path)
    duration = audio_file.duration_seconds
    return duration
+
+def get_random_wait_messages():
+    messages = [
+        "Please wait...",
+        "I am thinking...",
+        "I am processing your request...",
+        "Hold on...",
+        "I am on it...",
+        "I am working on it...",
+    ]
+    return random.choice(messages)
