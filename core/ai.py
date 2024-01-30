@@ -20,6 +20,7 @@ from utils.redis_utils import (
 from utils.bhashini import (
     bhashini_input,
     bhashini_output,
+    bhashini_asr
 )
 
 import json
@@ -194,3 +195,9 @@ def bhashini_text_chat(chat_id, text): #lang
 # to track time, one can use the following:
 # with Halo(text='Processing...', spinner='dots')
 # function code
+
+def bhashini_audio_chat(chat_id, audio_file):
+    input_message = bhashini_asr(audio_file)
+    print(f"The input message is : {input_message}")
+    assistant_message, history =  chat(chat_id, input_message)
+    return assistant_message, history

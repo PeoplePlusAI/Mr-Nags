@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from core.ai import chat, audio_chat, bhashini_text_chat
+from core.ai import chat, audio_chat, bhashini_text_chat, bhashini_audio_chat
 from telegram import Update
 from telegram.ext import (
     ApplicationBuilder,
@@ -14,6 +14,7 @@ import dotenv
 import tempfile
 import time
 from tqdm import tqdm
+import base64
 
 dotenv.load_dotenv("ops/.env")
 
@@ -24,13 +25,13 @@ logging.basicConfig(
     level=logging.INFO
 )
 
-async def progress_bar(context, chat_id, start_time, update_interval=15, max_duration=90):
-    while True:
-        await asyncio.sleep(update_interval)
-        wait_time = time.time() - start_time
-        if wait_time > max_duration:
-            break
-        await context.bot.send_message(caht_id=chat_id, text="Thank you for your patience. We're wokring on it.")
+# async def progress_bar(context, chat_id, start_time, update_interval=15, max_duration=90):
+#     while True:
+#         await asyncio.sleep(update_interval)
+#         wait_time = time.time() - start_time
+#         if wait_time > max_duration:
+#             break
+#         await context.bot.send_message(caht_id=chat_id, text="Thank you for your patience. We're wokring on it.")
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
@@ -43,13 +44,13 @@ async def respond(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text
     
     # await context.bot.send_message(chat_id=chat_id, text="We're starting the compliant process. Please wait...")
-    update_task = asyncio.create_task(progress_bar(context, chat_id, start_time))
+    #update_task = asyncio.create_task(progress_bar(context, chat_id, start_time))
 
     response, history = bhashini_text_chat(chat_id,text)
     
     await context.bot.send_message(chat_id=chat_id, text="Thank you for your patience.")
     
-    update_task.cancel()
+    #update_task.cancel()
 
     await context.bot.send_message(chat_id=chat_id, text=response)
     #end_time = time.time()
@@ -60,11 +61,18 @@ async def respond_audio(update: Update, context: ContextTypes.DEFAULT_TYPE):
     audio_file = await context.bot.get_file(update.message.voice.file_id)
 
     # Use a temporary file
-    with tempfile.NamedTemporaryFile(suffix='.ogg', delete=True) as temp_audio_file:
+    with tempfile.NamedTemporaryFile(suffix='.wav', delete=True) as temp_audio_file:
         await audio_file.download_to_drive(custom_path=temp_audio_file.name)
         chat_id = update.effective_chat.id
         print(chat_id)
-        response, history = audio_chat(chat_id, audio_file=open(temp_audio_file.name, "rb"))
+
+        # Convert audio file to base64 encoded string
+        with open(temp_audio_file.name, "rb") as file:
+            audio_data = file.read()
+            audio_base64 = base64.b64encode(audio_data).decode('utf-8')
+
+        response, history = bhashini_audio_chat(chat_id, audio_file=audio_base64)
+        
         await context.bot.send_message(chat_id=update.effective_chat.id, text=response)
 
 # for getting location,we can use this 
