@@ -10,8 +10,14 @@ load_dotenv(
     dotenv_path="ops/.env",
 )
 
+with open("prompts/main.txt", "r") as file:
+    main_prompt = file.read()
+
+print(main_prompt)
+
 openai_api_key = os.getenv("OPENAI_API_KEY")
 assistant_id = os.getenv("ASSISTANT_ID")
+model_name = os.getenv("MODEL_NAME")
 
 #OPENAI FUNCTION CALLS
 
@@ -145,7 +151,7 @@ def create_assistant(client, assistant_id):
     except Exception as e:
         assistant = client.beta.assistants.create(
         name="Complaint Assistant",
-        instructions="You ara a helpful complaint assistant who will collect information about a complaint and raise the complaint. You are talking to common citizens who are not tech savvy, so ask questions one by one. You will also have to search for complaints raised by the user.",
+        instructions=main_prompt,
         model="gpt-4",
         tools=[
                 {
