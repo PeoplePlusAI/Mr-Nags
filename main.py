@@ -1,37 +1,31 @@
 import asyncio
 import logging
 from core.ai import chat, audio_chat, bhashini_text_chat, bhashini_audio_chat
-from telegram import Update
+
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
     ApplicationBuilder,
     ContextTypes, 
     MessageHandler,
     CommandHandler, 
     filters,
+    CallbackQueryHandler,
 )
 import os
 import dotenv
 import tempfile
 import time
-#from tqdm import tqdm
 import base64
 
 dotenv.load_dotenv("ops/.env")
 
 token = os.getenv('TELEGRAM_BOT_TOKEN')
+lang = 'en'
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO
 )
-
-# async def progress_bar(context, chat_id, start_time, update_interval=15, max_duration=90):
-#     while True:
-#         await asyncio.sleep(update_interval)
-#         wait_time = time.time() - start_time
-#         if wait_time > max_duration:
-#             break
-#         await context.bot.send_message(caht_id=chat_id, text="Thank you for your patience. We're wokring on it.")
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
@@ -45,7 +39,7 @@ async def talk(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # await context.bot.send_message(chat_id=chat_id, text="We're starting the compliant process. Please wait...")
     #update_task = asyncio.create_task(progress_bar(context, chat_id, start_time))
 
-    response, history = bhashini_text_chat(chat_id,text)
+    response, history = bhashini_text_chat(chat_id,text, lang)
     
     # await context.bot.send_message(chat_id=chat_id, text="Thank you for your patience.")
     
@@ -55,27 +49,39 @@ async def talk(update: Update, context: ContextTypes.DEFAULT_TYPE):
     #print(f"history status is {history.get('status')}")
     #print(f"Time taken: {end_time - start_time}")
 
-async def talk__audio(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    text = "Choose a language for audio:\n1. English\n2. Hindi\n3. Punjabi"
+
+# async def progress_bar(context, chat_id, start_time, update_interval=15, max_duration=90):
+#     while True:
+#         await asyncio.sleep(update_interval)
+#         wait_time = time.time() - start_time
+#         if wait_time > max_duration:
+#             break
+#         await context.bot.send_message(caht_id=chat_id, text="Thank you for your patience. We're wokring on it.")
+
+async def handle_language_selection(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    global lang
+    chat_id = update.effective_chat.id
+    text = "Choose a language for audio:\n1. English\n2. Hindi\n3. Punjabi. Type the number to proceed"
     await context.bot.send_message(chat_id=update.effective_chat.id, text=text)
+    selected_language = update.message.text
+    # if text not in ['1','2','3']:
+    #     await context.bot.send_message(chat_id=update.effective_chat.id, text="Please retry")
+    #     await start(update, context) # to start language selection again
+    languages = {'1': 'en', '2': 'hi', '3': 'pa'}
+    lang = languages.get(selected_language) 
+    # lang = context.user_data.get('lang')
+    
+    # if not lang:
+    #     await context.bot.send_message(chat_id=chat_id, text="Invalid selection. Please retry.")
+    
+    await context.bot.send_message(chat_id=chat_id, text=" You have chosen " + lang + " as your language. Please wait ..")
+    # return lang
+
+async def talk__audio(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     # Handle user's language selection
-    async def handle_language_selection(update: Update, context: ContextTypes.DEFAULT_TYPE):
-        chat_id = update.effective_chat.id
-        selected_language = update.message.text
-        if selected_language == "1":
-            language = "English"
-        elif selected_language == "2":
-            language = "Hindi"
-        elif selected_language == "3":
-            language = "Punjabi"
-        else:
-            await context.bot.send_message(chat_id=chat_id, text="Invalid selection. Please try again.")
-            return
+    # lang = await handle_language_selection(update, context)
 
-        await context.bot.send_message(chat_id=chat_id, text=f"You selected {language} language.")
-    
-    
     # getting audio file
     audio_file = await context.bot.get_file(update.message.voice.file_id)
 
@@ -90,7 +96,7 @@ async def talk__audio(update: Update, context: ContextTypes.DEFAULT_TYPE):
             audio_data = file.read()
             audio_base64 = base64.b64encode(audio_data).decode('utf-8')
 
-        response, history = bhashini_audio_chat(chat_id, audio_file=audio_base64)
+        response, history = bhashini_audio_chat(chat_id, audio_file=audio_base64, lang=lang)
         
         await context.bot.send_message(chat_id=update.effective_chat.id, text=response)
 
@@ -122,7 +128,6 @@ async def respond(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(chat_id=chat_id, text=response)
 
 
-
 async def respond_audio(update: Update, context: ContextTypes.DEFAULT_TYPE):
     audio_file = await context.bot.get_file(update.message.voice.file_id)
 
@@ -152,11 +157,12 @@ if __name__ == '__main__':
     application = ApplicationBuilder().token(token).read_timeout(30).write_timeout(30).build()
     start_handler = CommandHandler('start', start)
     # choose language -> then use Bhashini
+    language_handler = MessageHandler(filters.TEXT & (~filters.COMMAND), handle_language_selection)
     response_handler = MessageHandler(filters.TEXT & (~filters.COMMAND), talk)
     audio_handler = MessageHandler(filters.VOICE & (~filters.COMMAND), talk__audio)
-    #language_handler = MessageHandler(filters.TEXT & (~filters.COMMAND), handle_language_selection)
-    # application.add_handler(language_handler)
-    application.add_handler(response_handler)
+    
+    application.add_handler(language_handler)
     application.add_handler(start_handler)
+    application.add_handler(response_handler)
     application.add_handler(audio_handler)
     application.run_polling()

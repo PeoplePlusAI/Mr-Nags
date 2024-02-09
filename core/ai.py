@@ -196,8 +196,8 @@ def bhashini_text_chat(chat_id, text, lang): #lang
 # with Halo(text='Processing...', spinner='dots')
 # function code
 
-def bhashini_audio_chat(chat_id, audio_file):
-    input_message = bhashini_asr(audio_file)
-    #print(f"The input message is : {input_message}")
+def bhashini_audio_chat(chat_id, audio_file, lang):
+    input_message = bhashini_asr(audio_file, lang)
+    print(f"The input message is : {input_message}")
     assistant_message, history =  chat(chat_id, input_message)
     return assistant_message, history
