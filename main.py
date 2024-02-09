@@ -13,7 +13,7 @@ import os
 import dotenv
 import tempfile
 import time
-from tqdm import tqdm
+#from tqdm import tqdm
 import base64
 
 dotenv.load_dotenv("ops/.env")
@@ -37,8 +37,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
     await context.bot.send_message(chat_id=chat_id, text="Hello I am Mr. Nags, start raising a complaint with me")
 
-async def respond(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    start_time = time.time()
+async def talk(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     chat_id = update.effective_chat.id
     text = update.message.text
@@ -48,16 +47,36 @@ async def respond(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     response, history = bhashini_text_chat(chat_id,text)
     
-    await context.bot.send_message(chat_id=chat_id, text="Thank you for your patience.")
+    # await context.bot.send_message(chat_id=chat_id, text="Thank you for your patience.")
     
     #update_task.cancel()
-
     await context.bot.send_message(chat_id=chat_id, text=response)
     #end_time = time.time()
     #print(f"history status is {history.get('status')}")
     #print(f"Time taken: {end_time - start_time}")
 
-async def respond_audio(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def talk__audio(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    text = "Choose a language for audio:\n1. English\n2. Hindi\n3. Punjabi"
+    await context.bot.send_message(chat_id=update.effective_chat.id, text=text)
+
+    # Handle user's language selection
+    async def handle_language_selection(update: Update, context: ContextTypes.DEFAULT_TYPE):
+        chat_id = update.effective_chat.id
+        selected_language = update.message.text
+        if selected_language == "1":
+            language = "English"
+        elif selected_language == "2":
+            language = "Hindi"
+        elif selected_language == "3":
+            language = "Punjabi"
+        else:
+            await context.bot.send_message(chat_id=chat_id, text="Invalid selection. Please try again.")
+            return
+
+        await context.bot.send_message(chat_id=chat_id, text=f"You selected {language} language.")
+    
+    
+    # getting audio file
     audio_file = await context.bot.get_file(update.message.voice.file_id)
 
     # Use a temporary file
@@ -87,12 +106,56 @@ async def respond_audio(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "Since you're filing the complaint form your location, we're recording it."
     )'''
 
+async def respond(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    start_time = time.time()
+    text = update.message.text
+    chat_id = update.effective_chat.id
+    wait_message = get_random_wait_messages(
+        not_always=True
+    )
+    if wait_message:
+        await context.bot.send_message(chat_id=chat_id, text=wait_message)
+    response, history = chat(chat_id, text)
+    end_time = time.time()
+    print(f"history status is {history.get('status')}")
+    print(f"Time taken: {end_time - start_time}")
+    await context.bot.send_message(chat_id=chat_id, text=response)
+
+
+
+async def respond_audio(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    audio_file = await context.bot.get_file(update.message.voice.file_id)
+
+    # Use a temporary file
+    with tempfile.NamedTemporaryFile(suffix='.wav', delete=True) as temp_audio_file:
+        await audio_file.download_to_drive(custom_path=temp_audio_file.name)
+        chat_id = update.effective_chat.id
+        wait_message = get_random_wait_messages(
+            not_always=True
+        )
+        if wait_message:
+            await context.bot.send_message(chat_id=chat_id, text=wait_message)
+        response_audio, history = audio_chat(
+            chat_id, audio_file=open(temp_audio_file.name, "rb")
+        )
+        response_audio.stream_to_file(temp_audio_file.name)
+        duration = get_duration_pydub(temp_audio_file.name)
+        await context.bot.send_audio(
+            chat_id=chat_id, 
+            audio=open(temp_audio_file.name, "rb"), 
+            duration=duration, 
+            filename="response.wav",
+            performer="Mr. Nags",
+        )
+
 if __name__ == '__main__':
     application = ApplicationBuilder().token(token).read_timeout(30).write_timeout(30).build()
     start_handler = CommandHandler('start', start)
     # choose language -> then use Bhashini
-    response_handler = MessageHandler(filters.TEXT & (~filters.COMMAND), respond)
-    audio_handler = MessageHandler(filters.VOICE & (~filters.COMMAND), respond_audio)
+    response_handler = MessageHandler(filters.TEXT & (~filters.COMMAND), talk)
+    audio_handler = MessageHandler(filters.VOICE & (~filters.COMMAND), talk__audio)
+    #language_handler = MessageHandler(filters.TEXT & (~filters.COMMAND), handle_language_selection)
+    # application.add_handler(language_handler)
     application.add_handler(response_handler)
     application.add_handler(start_handler)
     application.add_handler(audio_handler)
