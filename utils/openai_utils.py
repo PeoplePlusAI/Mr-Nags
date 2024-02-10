@@ -208,10 +208,6 @@ def get_assistant_message(client, thread_id):
     messages = client.beta.threads.messages.list(
         thread_id=thread_id,
     )
-    # this has to be in chosen language 
-    # lang = get_redis_value('lang')
-    # res = bhashini_input(messages.data[0].content[0].text.value, lang)
-    # return res
     return messages.data[0].content[0].text.value
 
 def transcribe_audio(audio_file, client):

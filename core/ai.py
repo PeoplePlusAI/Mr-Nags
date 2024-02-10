@@ -52,6 +52,14 @@ assistant = create_assistant(client, assistant_id)
 # for _ in tqdm(range(100), desc="Processing..."):
 
 def chat(chat_id, message):
+    try:
+        lang = get_redis_value('lang').decode('utf-8')
+        print('ok5')
+        print(lang)
+    except Exception as e:
+        # lang = 'hi'
+        print("Error:", e)
+    
     history = get_redis_value(chat_id)
     if history == None:
         history = {
@@ -79,7 +87,11 @@ def chat(chat_id, message):
         run = upload_message(client, thread.id, message, assistant.id)
         run, status = get_run_status(run, client, thread)
 
-        assistant_message = get_assistant_message(client, thread.id)
+        
+        resp = get_assistant_message(client, thread.id)
+         # this has to be in chosen language
+        assistant_message = bhashini_output(resp, lang=lang)
+        print('ok6')
 
         history = {
             "thread_id": thread.id,
@@ -128,8 +140,10 @@ def chat(chat_id, message):
                         tool_outputs=tool_output_array
                     )
                     run, status = get_run_status(run, client, thread)
-
-                    message = get_assistant_message(client, thread.id)
+                    
+                    resp = get_assistant_message(client, thread.id)
+                    message = bhashini_output(resp, lang=lang)
+                    print('ok8')
 
                     history = {
                         "thread_id": thread.id,
@@ -158,7 +172,9 @@ def chat(chat_id, message):
                     )
                     run, status = get_run_status(run, client, thread)
 
-                    message = get_assistant_message(client, thread.id)
+                    resp = get_assistant_message(client, thread.id)
+                    message = bhashini_output(resp, lang=lang)
+                    print('ok7')
                     
                     history = {
                         "thread_id": thread.id,
