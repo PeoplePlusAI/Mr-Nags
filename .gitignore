@@ -6,4 +6,5 @@
 __pycache__/
 venv/
 *.env
+/Users/leader/Downloads/AI_Army/ML_Basics/NLP/My_ChatBot/Mr-Nags/notebooks/egov
 # END: python-gitignore
