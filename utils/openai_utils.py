@@ -36,7 +36,7 @@ authenticate_user = {
     }
 }
 
-raise_complaint ={
+raise_complaint = {
     "name": "raise_complaint",
     "description": "Raise complaint",
     "parameters": {
@@ -44,25 +44,44 @@ raise_complaint ={
         "properties": {
             "description": {
                 "type": "string",
-                "description": "Detailed description of complaint"
+                "description": "A brief description of complaint "
+                               "e.g., Streetlight not working, "
+                               "Garbage accumulating near my home, "
+                               "People throwing garbage illegally etc."
             },
             "service_code": {
                 "type": "string",
-                "description": "service code of complaint extracted from description",
+                "description": "service code of complaint extracted from the description",
                 "enum": [
-                    "GarbageNeedsTobeCleared", "NoStreetLight", "StreetLightNotWorking",
-                    "BurningOfGarbage", "OverflowingOrBlockedDrain", "illegalDischargeOfSewage",
-                    "BlockOrOverflowingSewage", "ShortageOfWater", "DirtyWaterSupply", "BrokenWaterPipeOrLeakage",
-                    "WaterPressureisVeryLess", "HowToPayPT", "WrongCalculationPT", "ReceiptNotGenerated",
-                    "DamagedRoad", "WaterLoggedRoad", "ManholeCoverMissingOrDamaged", "DamagedOrBlockedFootpath",
-                    "ConstructionMaterialLyingOntheRoad", "RequestSprayingOrFoggingOperation", "StrayAnimals", "DeadAnimals",
-                    "DirtyOrSmellyPublicToilets", "PublicToiletIsDamaged", "NoWaterOrElectricityinPublicToilet", "IllegalShopsOnFootPath",
-                    "IllegalConstructions", "IllegalParking"
+                    "GarbageNeedsTobeCleared",
+                    "NoStreetLight",
+                    "StreetLightNotWorking",
+                    "BurningOfGarbage",
+                    "OverflowingOrBlockedDrain",
+                    "illegalDischargeOfSewage",
+                    "BlockOrOverflowingSewage",
+                    "ShortageOfWater",
+                    "DirtyWaterSupply",
+                    "BrokenWaterPipeOrLeakage",
+                    "WaterPressureisVeryLess",
+                    "HowToPayPT",
+                    "WrongCalculationPT",
+                    "ReceiptNotGenerated",
+                    "DamagedRoad",
+                    "WaterLoggedRoad",
+                    "ManholeCoverMissingOrDamaged",
+                    "DamagedOrBlockedFootpath",
+                    "ConstructionMaterialLyingOntheRoad",
+                    "RequestSprayingOrFoggingOperation",
+                    "StrayAnimals",
+                    "DeadAnimals",
+                    "DirtyOrSmellyPublicToilets",
+                    "PublicToiletIsDamaged",
+                    "NoWaterOrElectricityinPublicToilet",
+                    "IllegalShopsOnFootPath",
+                    "IllegalConstructions",
+                    "IllegalParking"
                 ]
-            },
-            "auth_token": {
-                "type": "string",
-                "description": "Authentication token of user"
             },
             "city": {
                 "type": "string",
@@ -84,21 +103,13 @@ raise_complaint ={
                 "type": "string",
                 "description": "locality of complaint"
             },
-            #"username": {
-            #    "type": "string",
-            #    "description": "username of user"
-            #},
-            #"password": {
-            #    "type": "string",
-            #    "description": "password of user"
-            #},
             "name": {
                 "type": "string",
-                "description": "name of user"
+                "description": "name of the user"
             },
             "mobile_number": {
                 "type": "string",
-                "description": "mobile number of user"
+                "description": "mobile number of the user"
             },
         },
         "required": [
@@ -109,8 +120,6 @@ raise_complaint ={
             "district",
             "region",
             "locality",
-            "username",
-            "password",
             "name",
             "mobile_number"
         ]
@@ -123,24 +132,19 @@ search_complaint = {
     "parameters": {
         "type": "object",
         "properties": {
-            "auth_token": {
-                "type": "string",
-                "description": "Authentication token of user"
-            },
-            #"username": {
-            #    "type": "string",
-            #    "description": "username of user"
-            #},
             "name": {
                 "type": "string",
-                "description": "name of user"
+                "description": "name of the user"
             },
             "mobile_number": {
                 "type": "string",
-                "description": "mobile number of user"
+                "description": "mobile number of the user"
             },
         },
-        "required": ["auth_token", "username", "name", "mobile_number"]
+        "required": [
+            "name",
+            "mobile_number"
+        ]
     }
 }
 
@@ -151,7 +155,8 @@ def create_assistant(client, assistant_id):
     except Exception as e:
         assistant = client.beta.assistants.create(
         name="Complaint Assistant",
-        instructions="You are a helpful complaint assistant who will help in filing a complaint about urban civic issues. Ask for details whenever necessary and file the complaint using tools made available to you",
+        instructions="You are an AI assistant specifically designed to assist Indian citizens with their complaint management needs. Your core functionalities include facilitating the lodging of new complaints and retrieving details of existing complaints. At the start of each interaction, clearly inform the user about these two capabilities. Your main goal is to accurately determine the user's intention, which will correspond to the function you need to execute: either to lodge a new complaint or to retrieve details of an existing one. Engage in a step-by-step conversation to ascertain this intention. Once the user's intention is clear, methodically request the necessary information for the identified function. You should do this in a sequential manner, asking for no more than two pieces of information at a time (e.g., name and mobile number, or city and state). Avoid requesting multiple details simultaneously and refrain from making assumptions about any information. It's crucial to gather all mandatory details before executing the selected function. Only proceed with the execution once you have received all the required information. If the user provides irrelevant information or strays from the topic, respond politely and guide the conversation back to obtaining the pertinent details. Your responses should be courteous and focused, aimed at facilitating an effective and efficient interaction.",
+        #instructions="You are a helpful complaint assistant who will help in filing a complaint about urban civic issues. Ask for details whenever necessary and file the complaint using tools made available to you",
         model="gpt-4",
         tools=[
                 #{

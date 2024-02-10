@@ -23,12 +23,9 @@ from utils.bhashini import (
     bhashini_asr
 )
 
+import os
 import json
 import time
-import os
-import time
-# from halo import Halo
-# from tqdm import tqdm
 from dotenv import load_dotenv
 
 load_dotenv(
@@ -49,12 +46,9 @@ client = OpenAI(
 
 assistant = create_assistant(client, assistant_id)
 
-# for _ in tqdm(range(100), desc="Processing..."):
-
 def chat(chat_id, message):
     try:
         lang = get_redis_value('lang').decode('utf-8')
-        print('ok5')
         print(lang)
     except Exception as e:
         # lang = 'hi'
@@ -87,10 +81,10 @@ def chat(chat_id, message):
         run = upload_message(client, thread.id, message, assistant.id)
         run, status = get_run_status(run, client, thread)
 
-        
         resp = get_assistant_message(client, thread.id)
-         # this has to be in chosen language
+        # this has to be in chosen language
         assistant_message = bhashini_output(resp, lang=lang)
+        print('assistant_message:', assistant_message)  # Print the value of assistant_message
         print('ok6')
 
         history = {
@@ -141,8 +135,8 @@ def chat(chat_id, message):
                     )
                     run, status = get_run_status(run, client, thread)
                     
-                    resp = get_assistant_message(client, thread.id)
-                    message = bhashini_output(resp, lang=lang)
+                    resp1 = get_assistant_message(client, thread.id)
+                    message = bhashini_output(resp1, lang=lang)
                     print('ok8')
 
                     history = {
@@ -200,17 +194,11 @@ def bhashini_text_chat(chat_id, text, lang): #lang
     '''Supported languages are : Assamese, Bengali, Bodo, Dogri, English, Gujarati, Hindi, Kannada, Kashmiri, Konkani, Maithili, Malayalam, 
     Manipuri, Marathi, Nepali, Odia, Punjabi, Sanskrit, Santali, Sindhi, Tamil, Telugu, Urdu'''
     # Assuming original input is in Punjabi, translating into English using Bhashini API
-    #translated_message = bhashini_input(input_message)
     input_message = bhashini_input(text, lang)
     response, history = chat(chat_id, input_message)
     # translating English to Punjabi using Bhashini API
-    output_message = bhashini_output(response, lang)
-
-    return output_message, history
-
-# to track time, one can use the following:
-# with Halo(text='Processing...', spinner='dots')
-# function code
+    # output_message = bhashini_output(response, lang)
+    return response, history
 
 def bhashini_audio_chat(chat_id, audio_file, lang):
     input_message = bhashini_asr(audio_file, lang)

@@ -1,3 +1,4 @@
+
 import asyncio
 import logging
 from core.ai import chat, audio_chat, bhashini_text_chat, bhashini_audio_chat
@@ -17,7 +18,6 @@ import dotenv
 import tempfile
 import time
 import base64
-import urllib
 from typing import Union, TypedDict
 
 from utils.redis_utils import (
@@ -29,18 +29,35 @@ dotenv.load_dotenv("ops/.env")
 
 token = os.getenv('TELEGRAM_BOT_TOKEN')
 
-# lang = None  # Declare lang as a global variable
+run_once = False  # Declare it as a global variable
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO
 )
+class LanguagePreference:
+    _instance = None
+    lang = "en"  # Default language is English
+    
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super(LanguagePreference, cls).__new__(cls)
+        return cls._instance
 
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    chat_id = update.effective_chat.id
-    await update.message.reply_text("Hello I am Mr. Nags, tell me what complaint you have to raise.")
-    # await context.bot.send_message(chat_id=chat_id, text="Hello I am Mr. Nags, start raising a complaint with me")
-    await relay_handler(update, context)
+    @classmethod
+    def get_language(cls):
+        return cls.lang
+
+    @classmethod
+    def set_language(cls, new_lang):
+        cls.lang = new_lang
+
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    global run_once
+    if not run_once:
+        run_once = True
+        await context.bot.send_message(chat_id=update.effective_chat.id, text="Hello I am Mr. Nags, start raising a complaint with me")
+        await relay_handler(update, context)
 
 async def relay_handler(update: Update, context: CallbackContext):
     await language_handler(update, context)
@@ -68,12 +85,12 @@ async def preferred_language_callback(update: Update, context: CallbackContext):
     try:
         preferred_language = callback_query.data
         lang = languages.get(preferred_language)
+        LanguagePreference.set_language(lang)
+        context.user_data['lang'] = lang
         print(lang)
     except (AttributeError, ValueError):
-        preferred_language = 'en'  # Set a default language
+        lang = 'en'  # Set a default language
         await context.bot.send_message(chat_id=update.effective_chat.id, text="Error getting language! Setting default to English.")
-
-    context.user_data['lang'] = lang
     
     text_message = ""
     if lang == "en":
@@ -85,26 +102,13 @@ async def preferred_language_callback(update: Update, context: CallbackContext):
         
     try:
         set_redis('lang', lang)
+        lang = LanguagePreference.get_language()
+        print(lang)
     except Exception as e:
         print(e)
     
     await context.bot.send_message(chat_id=update.effective_chat.id, text=text_message)
     # print('ok1')
-'''
-async def handle_language_selection(update: Update, context: CallbackContext)-> None:
-    
-    #await update.message.reply_text('Please choose a language:', reply_markup=reply_markup)
-    # bot.answer_callback_query(update.callback_query.id, *args, **kwargs)
-    query = update.callback_query
-    await query.answer()  # getting error here.
-    selected_language = query.data
-    languages = {"1": "en", "2": "hi", "3": "pa"}
-    lang = languages.get(selected_language)
-    
-    if lang:
-        set_redis(lang)
-        print(lang)
-'''
 
 async def response_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await query_handler(update, context)
@@ -115,11 +119,11 @@ async def query_handler(update: Update, context: CallbackContext):
     if update.message.text:
         text = update.message.text
         await talk(update, context, text)
-        print("3")
+        print("ok1")
     elif update.message.voice:
         voice = await context.bot.get_file(update.message.voice.file_id)
-        await talk__audio(update, context, voice) # if this doesnt work, change to earlier method of directly calling func
-        print("4")
+        await talk__audio(update, context, voice)
+        print("ok1")
 
     text_message = ""
     if lang == "en":
@@ -130,14 +134,13 @@ async def query_handler(update: Update, context: CallbackContext):
         text_message = "ਮੇਰੇ ਨਾਲ ਸ਼ਿਕਾਇਤ ਦਰਜ ਕਰਵਾਉਣ ਲਈ ਧੰਨਵਾਦ"
 
     await context.bot.send_message(chat_id=update.effective_chat.id, text=text_message)
-    # print('ok2')
 
 async def talk(update: Update, context: ContextTypes.DEFAULT_TYPE, text: str):
     
     chat_id = update.effective_chat.id
     # text = update.message.text
     lang = context.user_data.get('lang')
-    # await context.bot.send_message(chat_id=chat_id, text="We're starting the compliant process. Please wait...")
+    
     # update_task = asyncio.create_task(progress_bar(context, chat_id, start_time))
     print('ok')
     response, history = bhashini_text_chat(chat_id,text, lang)
@@ -145,40 +148,19 @@ async def talk(update: Update, context: ContextTypes.DEFAULT_TYPE, text: str):
     
     #print(f"history status is {history.get('status')}")
     #print(f"Time taken: {end_time - start_time}")
-    
-'''
-async def handle_language_selection(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    global lang
-    chat_id = update.effective_chat.id
-    text = "Choose a language for audio:\n1. English\n2. Hindi\n3. Punjabi. Type the number to proceed"
-    await context.bot.send_message(chat_id=update.effective_chat.id, text=text)
-    selected_language = update.message.text
-    # if text not in ['1','2','3']:
-    #     await context.bot.send_message(chat_id=update.effective_chat.id, text="Please retry")
-    #     await start(update, context) # to start language selection again
-    languages = {'1': 'en', '2': 'hi', '3': 'pa'}
-    lang = languages.get(selected_language) 
-    # lang = context.user_data.get('lang')
-    
-    # if not lang:
-    #     await context.bot.send_message(chat_id=chat_id, text="Invalid selection. Please retry.")
-    
-    await context.bot.send_message(chat_id=chat_id, text=" You have chosen " + lang + " as your language. Please wait ..")
-    # return lang
-'''
 
 async def talk__audio(update: Update, context: ContextTypes.DEFAULT_TYPE, voice):    
     lang = context.user_data.get('lang')
     # getting audio file
     audio_file = voice
-    print('ok')
+    print('ok_voice')
     # audio_file = await context.bot.get_file(update.message.voice.file_id)
 
     # Use a temporary file
     with tempfile.NamedTemporaryFile(suffix='.wav', delete=True) as temp_audio_file:
         await audio_file.download_to_drive(custom_path=temp_audio_file.name)
         chat_id = update.effective_chat.id
-        print('ok3')
+        print('ok2')
 
         # Convert audio file to base64 encoded string
         with open(temp_audio_file.name, "rb") as file:
@@ -186,7 +168,7 @@ async def talk__audio(update: Update, context: ContextTypes.DEFAULT_TYPE, voice)
             audio_base64 = base64.b64encode(audio_data).decode('utf-8')
 
         response, history = bhashini_audio_chat(chat_id, audio_file=audio_base64, lang=lang)
-        print('ok4')
+        print('ok_')
         await context.bot.send_message(chat_id=update.effective_chat.id, text=response)
 
 # for getting location,we can use this 
@@ -258,13 +240,10 @@ if __name__ == '__main__':
     chosen_language = CallbackQueryHandler(preferred_language_callback)
     # response_handler = MessageHandler(filters.TEXT & (~filters.COMMAND), talk)
     # audio_handler = MessageHandler(filters.VOICE & (~filters.COMMAND), talk__audio)
-    
     application.add_handler(start_handler)
     application.add_handler(language_handler_)
     application.add_handler(chosen_language)
-    # application.add_handler(language_handler)
     application.add_handler(MessageHandler((filters.TEXT & (~filters.COMMAND)) | (filters.VOICE & (~filters.COMMAND)), response_handler))
     application.run_polling()
     
-
 
