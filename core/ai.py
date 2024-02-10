@@ -47,12 +47,6 @@ client = OpenAI(
 assistant = create_assistant(client, assistant_id)
 
 def chat(chat_id, message):
-    try:
-        lang = get_redis_value('lang').decode('utf-8')
-        print(lang)
-    except Exception as e:
-        # lang = 'hi'
-        print("Error:", e)
     
     history = get_redis_value(chat_id)
     if history == None:
@@ -83,6 +77,11 @@ def chat(chat_id, message):
 
         resp = get_assistant_message(client, thread.id)
         # this has to be in chosen language
+        try:
+            lang = get_redis_value('lang').decode('utf-8')
+            print(lang)
+        except Exception as e:
+            print("Error:", e)
         assistant_message = bhashini_output(resp, lang=lang)
         print('assistant_message:', assistant_message)  # Print the value of assistant_message
         print('ok6')
