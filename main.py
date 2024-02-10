@@ -25,6 +25,10 @@ from utils.redis_utils import (
     set_redis,
 )
 
+from utils.openai_utils import (
+    get_duration_pydub, 
+    get_random_wait_messages
+)
 dotenv.load_dotenv("ops/.env")
 
 token = os.getenv('TELEGRAM_BOT_TOKEN')
@@ -205,6 +209,7 @@ async def respond(update: Update, context: ContextTypes.DEFAULT_TYPE):
     print(f"history status is {history.get('status')}")
     print(f"Time taken: {end_time - start_time}")
     await context.bot.send_message(chat_id=chat_id, text=response)
+
 
 
 async def respond_audio(update: Update, context: ContextTypes.DEFAULT_TYPE):
