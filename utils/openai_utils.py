@@ -1,19 +1,20 @@
 from dotenv import load_dotenv
 from utils.redis_utils import set_redis
+import random
+from pydub import AudioSegment
 import time
 import os
 
-from utils.bhashini import (
-    bhashini_input,
-    bhashini_output,
-)
 
 load_dotenv(
     dotenv_path="ops/.env",
 )
 
+main_prompt = 'You are an AI assistant specifically designed to assist Indian citizens with their complaint management needs. Your core functionalities include facilitating the lodging of new complaints and retrieving details of existing complaints. At the start of each interaction, clearly inform the user about these two capabilities. Do not ask for no more than two pieces of information at a time (e.g., name and mobile number, or city and state). Do not ask for service code. Service code should be determined from function calling config provided. Actually do not mention about service code to the user. Its an internal thing. Avoid requesting multiple details simultaneously. Your responses should be courteous and focused, aimed at facilitating an effective and efficient interaction.'
+
 openai_api_key = os.getenv("OPENAI_API_KEY")
 assistant_id = os.getenv("ASSISTANT_ID")
+model_name = os.getenv("MODEL_NAME")
 
 #OPENAI FUNCTION CALLS
 
@@ -36,7 +37,7 @@ authenticate_user = {
     }
 }
 
-raise_complaint = {
+raise_complaint ={
     "name": "raise_complaint",
     "description": "Raise complaint",
     "parameters": {
@@ -44,44 +45,25 @@ raise_complaint = {
         "properties": {
             "description": {
                 "type": "string",
-                "description": "A brief description of complaint "
-                               "e.g., Streetlight not working, "
-                               "Garbage accumulating near my home, "
-                               "People throwing garbage illegally etc."
+                "description": "Detailed description of complaint"
             },
             "service_code": {
                 "type": "string",
-                "description": "service code of complaint extracted from the description",
+                "description": "service code of complaint extracted from description",
                 "enum": [
-                    "GarbageNeedsTobeCleared",
-                    "NoStreetLight",
-                    "StreetLightNotWorking",
-                    "BurningOfGarbage",
-                    "OverflowingOrBlockedDrain",
-                    "illegalDischargeOfSewage",
-                    "BlockOrOverflowingSewage",
-                    "ShortageOfWater",
-                    "DirtyWaterSupply",
-                    "BrokenWaterPipeOrLeakage",
-                    "WaterPressureisVeryLess",
-                    "HowToPayPT",
-                    "WrongCalculationPT",
-                    "ReceiptNotGenerated",
-                    "DamagedRoad",
-                    "WaterLoggedRoad",
-                    "ManholeCoverMissingOrDamaged",
-                    "DamagedOrBlockedFootpath",
-                    "ConstructionMaterialLyingOntheRoad",
-                    "RequestSprayingOrFoggingOperation",
-                    "StrayAnimals",
-                    "DeadAnimals",
-                    "DirtyOrSmellyPublicToilets",
-                    "PublicToiletIsDamaged",
-                    "NoWaterOrElectricityinPublicToilet",
-                    "IllegalShopsOnFootPath",
-                    "IllegalConstructions",
-                    "IllegalParking"
+                    "GarbageNeedsTobeCleared", "NoStreetLight", "StreetLightNotWorking",
+                    "BurningOfGarbage", "OverflowingOrBlockedDrain", "illegalDischargeOfSewage",
+                    "BlockOrOverflowingSewage", "ShortageOfWater", "DirtyWaterSupply", "BrokenWaterPipeOrLeakage",
+                    "WaterPressureisVeryLess", "HowToPayPT", "WrongCalculationPT", "ReceiptNotGenerated",
+                    "DamagedRoad", "WaterLoggedRoad", "ManholeCoverMissingOrDamaged", "DamagedOrBlockedFootpath",
+                    "ConstructionMaterialLyingOntheRoad", "RequestSprayingOrFoggingOperation", "StrayAnimals", "DeadAnimals",
+                    "DirtyOrSmellyPublicToilets", "PublicToiletIsDamaged", "NoWaterOrElectricityinPublicToilet", "IllegalShopsOnFootPath",
+                    "IllegalConstructions", "IllegalParking"
                 ]
+            },
+            "auth_token": {
+                "type": "string",
+                "description": "Authentication token of user"
             },
             "city": {
                 "type": "string",
@@ -103,13 +85,21 @@ raise_complaint = {
                 "type": "string",
                 "description": "locality of complaint"
             },
+            #"username": {
+            #    "type": "string",
+            #    "description": "username of user"
+            #},
+            #"password": {
+            #    "type": "string",
+            #    "description": "password of user"
+            #},
             "name": {
                 "type": "string",
-                "description": "name of the user"
+                "description": "name of user"
             },
             "mobile_number": {
                 "type": "string",
-                "description": "mobile number of the user"
+                "description": "mobile number of user"
             },
         },
         "required": [
@@ -120,6 +110,8 @@ raise_complaint = {
             "district",
             "region",
             "locality",
+            "username",
+            "password",
             "name",
             "mobile_number"
         ]
@@ -132,19 +124,20 @@ search_complaint = {
     "parameters": {
         "type": "object",
         "properties": {
+            "auth_token": {
+                "type": "string",
+                "description": "Authentication token of user"
+            },
             "name": {
                 "type": "string",
-                "description": "name of the user"
+                "description": "name of user"
             },
             "mobile_number": {
                 "type": "string",
-                "description": "mobile number of the user"
+                "description": "mobile number of user"
             },
         },
-        "required": [
-            "name",
-            "mobile_number"
-        ]
+        "required": ["auth_token", "name", "mobile_number"]
     }
 }
 
@@ -155,14 +148,9 @@ def create_assistant(client, assistant_id):
     except Exception as e:
         assistant = client.beta.assistants.create(
         name="Complaint Assistant",
-        instructions="You are an AI assistant specifically designed to assist Indian citizens with their complaint management needs. Your core functionalities include facilitating the lodging of new complaints and retrieving details of existing complaints. At the start of each interaction, clearly inform the user about these two capabilities. Your main goal is to accurately determine the user's intention, which will correspond to the function you need to execute: either to lodge a new complaint or to retrieve details of an existing one. Engage in a step-by-step conversation to ascertain this intention. Once the user's intention is clear, methodically request the necessary information for the identified function. You should do this in a sequential manner, asking for no more than two pieces of information at a time (e.g., name and mobile number, or city and state). Avoid requesting multiple details simultaneously and refrain from making assumptions about any information. It's crucial to gather all mandatory details before executing the selected function. Only proceed with the execution once you have received all the required information. If the user provides irrelevant information or strays from the topic, respond politely and guide the conversation back to obtaining the pertinent details. Your responses should be courteous and focused, aimed at facilitating an effective and efficient interaction.",
-        #instructions="You are a helpful complaint assistant who will help in filing a complaint about urban civic issues. Ask for details whenever necessary and file the complaint using tools made available to you",
+        instructions=main_prompt,
         model="gpt-4",
         tools=[
-                #{
-                #    "type": "function",
-                #    "function": authenticate_user
-                #},
                 {
                     "type": "function",
                     "function": raise_complaint
@@ -181,7 +169,6 @@ def create_thread(client):
     return thread
 
 def upload_message(client, thread_id, input_message, assistant_id):
-    
     message = client.beta.threads.messages.create(
         thread_id=thread_id,
         role="user",
@@ -192,22 +179,20 @@ def upload_message(client, thread_id, input_message, assistant_id):
         thread_id=thread_id,
         assistant_id=assistant_id,
     )
-    
     return run
 
 def get_run_status(run, client, thread):
-    i = 0
-
-    while run.status not in ["completed", "failed", "requires_action"]:
-        if i>0:
-            time.sleep(10)
-
+    delay = 5
+    run_status = run.status
+    while run_status not in ["completed", "failed", "requires_action"]:
+        time.sleep(delay)
         run = client.beta.threads.runs.retrieve(
             thread_id=thread.id,
             run_id=run.id,
         )
-        i += 1
-    return run, run.status
+        run_status = run.status
+        delay = 8 if run_status == "requires_action" else 5
+    return run, run_status
 
 def get_assistant_message(client, thread_id):
     messages = client.beta.threads.messages.list(
@@ -215,9 +200,43 @@ def get_assistant_message(client, thread_id):
     )
     return messages.data[0].content[0].text.value
 
+
 def transcribe_audio(audio_file, client):
     transcript = client.audio.transcriptions.create(
         model="whisper-1", 
         file=audio_file
     )
     return transcript.text
+
+def generate_audio(text, client):
+    response = client.audio.speech.create(
+                model="tts-1",
+                voice="alloy",
+                input=text
+            )
+    return response
+
+def get_duration_pydub(file_path):
+   audio_file = AudioSegment.from_file(file_path)
+   duration = audio_file.duration_seconds
+   return duration
+
+def get_random_wait_messages(not_always=False):
+    messages = [
+        "Please wait...",
+        "I am thinking...",
+        "I am processing your request...",
+        "Hold on...",
+        "I am on it...",
+        "I am working on it...",
+    ]
+    if not_always:
+        rand = random.randint(0, 2)
+        print(rand)
+        if rand == 1:
+            random_message = random.choice(messages)
+        else:
+            random_message = ""
+    else:
+        random_message = random.choice(messages)
+    return random_message
