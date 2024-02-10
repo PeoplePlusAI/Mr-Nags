@@ -2,9 +2,12 @@ import requests
 import json
 
 def bhashini_input(text, lang):
+    language = {'hi': 'Hindi', 'en': 'English', 'pa': 'Punjabi'}
+    lang_ = language.get(lang)
+    print(lang_)
     data = {
         "inputText": text,
-        "inputLanguage": f"{lang}",
+        "inputLanguage": lang_,
         "outputLanguage": "English"
     }
     headers = {'Content-Type': 'application/json'}
@@ -16,10 +19,13 @@ def bhashini_input(text, lang):
         print("Error:", response.status_code, response.text)
 
 def bhashini_output(text,lang):
+    language = {'hi': 'Hindi', 'en': 'English', 'pa': 'Punjabi'}
+    lang_ = language.get(lang)
+    print(lang_)
     data = {
         "inputText": text,
         "inputLanguage": "English",
-        "outputLanguage": f"{lang}"
+        "outputLanguage": lang_
     }
     headers = {'Content-Type': 'application/json'}
     response = requests.post("https://tts.bhashini.ai/v1/translate", headers=headers, json=data)
@@ -37,7 +43,7 @@ def bhashini_asr(audio_content, lang):
             "taskType": "asr",
             "config": {
                 "language": {
-                    "sourceLanguage": "{}".format(lang)
+                    "sourceLanguage": lang
                 },
                 "serviceId": "ai4bharat/conformer-hi-gpu--t4"
             }
@@ -46,7 +52,7 @@ def bhashini_asr(audio_content, lang):
             "taskType": "translation",
             "config": {
                 "language": {
-                    "sourceLanguage": "{}".format(lang),
+                    "sourceLanguage": lang,
                     "targetLanguage": "en"
                 },
                 "serviceId": "ai4bharat/indictrans-v2-all-gpu--t4"
