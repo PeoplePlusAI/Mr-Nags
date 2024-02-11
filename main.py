@@ -1,34 +1,27 @@
 
+import os
+import base64
+import tempfile
+import time
+from typing import Union
 import asyncio
 import logging
-from core.ai import chat, audio_chat, bhashini_text_chat, bhashini_audio_chat
-
-from telegram import Update, Bot, InlineKeyboardButton, InlineKeyboardMarkup
+import dotenv
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
     ApplicationBuilder,
-    ContextTypes, 
+    ContextTypes,
     MessageHandler,
-    CommandHandler, 
+    CommandHandler,
     filters,
     CallbackContext,
     CallbackQueryHandler,
 )
-import os
-import dotenv
-import tempfile
-import time
-import base64
-from typing import Union, TypedDict
 
-from utils.redis_utils import (
-    get_redis_value,
-    set_redis,
-)
+from core.ai import chat, audio_chat, bhashini_text_chat, bhashini_audio_chat
+from utils.redis_utils import set_redis
+from utils.openai_utils import get_duration_pydub, get_random_wait_messages
 
-from utils.openai_utils import (
-    get_duration_pydub, 
-    get_random_wait_messages
-)
 dotenv.load_dotenv("ops/.env")
 
 token = os.getenv('TELEGRAM_BOT_TOKEN')
@@ -43,7 +36,7 @@ class BotInitializer:
     
     def __new__(cls):
         if cls._instance is None:
-            cls._instance - super(BotInitializer, cls).__new__(cls)
+            cls._instance = super(BotInitializer, cls).__new__(cls)
             cls.run_once = True
         return cls._instance
 
@@ -70,6 +63,7 @@ async def language_handler(update: Update, context: CallbackContext):
 async def preferred_language_callback(update: Update, context: CallbackContext):
     
     callback_query = update.callback_query
+    # await query.amswer()
     print("Callback data:", callback_query.data)
     languages = {"1": "en", "2": "hi", "3": "pa"}
     try:
