@@ -63,10 +63,6 @@ async def language_handler(update: Update, context: CallbackContext):
         [InlineKeyboardButton("हिंदी", callback_data='2')],
         [InlineKeyboardButton("ਪੰਜਾਬੀ", callback_data='3')],
     ]
-    # english_button = InlineKeyboardButton('English', callback_data='1')
-    # hindi_button = InlineKeyboardButton('हिंदी', callback_data='2')
-    # punjabi_button = InlineKeyboardButton('ಕನ್ನಡ', callback_data='3')
-    # inline_keyboard_buttons = [[english_button], [hindi_button], [punjabi_button]]
     reply_markup = InlineKeyboardMarkup(keyboard)
 
     await context.bot.send_message(chat_id=update.effective_chat.id, text="Choose a Language:", reply_markup=reply_markup)
@@ -79,7 +75,7 @@ async def preferred_language_callback(update: Update, context: CallbackContext):
     try:
         preferred_language = callback_query.data
         lang = languages.get(preferred_language)
-        LanguagePreference.set_language(lang)
+        # LanguagePreference.set_language(lang)
         context.user_data['lang'] = lang
         print(lang)
     except (AttributeError, ValueError):
@@ -94,12 +90,8 @@ async def preferred_language_callback(update: Update, context: CallbackContext):
     elif lang == "pa":
         text_message = "ਤੁਸੀਂ ਪੰਜਾਬੀ ਨੂੰ ਚੁਣਿਆ ਹੈ। \ਕਿਰਪਾ ਕਰਕੇ ਹੁਣੇ ਆਪਣੀ ਸ਼ਿਕਾਇਤ ਦਿਓ"
         
-    try:
-        set_redis('lang', lang)
-        lang = LanguagePreference.get_language()
-        print(lang)
-    except Exception as e:
-        print(e)
+    set_redis('lang', lang)
+    print(lang) # lang = LanguagePreference.get_language()
     
     await context.bot.send_message(chat_id=update.effective_chat.id, text=text_message)
     # print('ok1')
@@ -146,7 +138,6 @@ async def talk__audio(update: Update, context: ContextTypes.DEFAULT_TYPE, voice)
     print('ok_voice')
     # audio_file = await context.bot.get_file(update.message.voice.file_id)
 
-    # Use a temporary file
     with tempfile.NamedTemporaryFile(suffix='.wav', delete=True) as temp_audio_file:
         await audio_file.download_to_drive(custom_path=temp_audio_file.name)
         chat_id = update.effective_chat.id
@@ -173,14 +164,16 @@ async def talk__audio(update: Update, context: ContextTypes.DEFAULT_TYPE, voice)
         "Since you're filing the complaint form your location, we're recording it."
     )'''
 
-# async def progress_bar(context, chat_id, start_time, update_interval=15, max_duration=90):
-#     while True:
-#         await asyncio.sleep(update_interval)
-#         wait_time = time.time() - start_time
-#         if wait_time > max_duration:
-#             break
-#         await context.bot.send_message(caht_id=chat_id, text="Thank you for your patience. We're wokring on it.")
-
+# for progress bar while waiting
+'''
+async def progress_bar(context, chat_id, start_time, update_interval=15, max_duration=90):
+    while True:
+        await asyncio.sleep(update_interval)
+        wait_time = time.time() - start_time
+        if wait_time > max_duration:
+            break
+        await context.bot.send_message(caht_id=chat_id, text="Thank you for your patience. We're wokring on it.")
+'''
 async def respond(update: Update, context: ContextTypes.DEFAULT_TYPE):
     start_time = time.time()
     text = update.message.text
@@ -195,8 +188,6 @@ async def respond(update: Update, context: ContextTypes.DEFAULT_TYPE):
     print(f"history status is {history.get('status')}")
     print(f"Time taken: {end_time - start_time}")
     await context.bot.send_message(chat_id=chat_id, text=response)
-
-
 
 async def respond_audio(update: Update, context: ContextTypes.DEFAULT_TYPE):
     audio_file = await context.bot.get_file(update.message.voice.file_id)
