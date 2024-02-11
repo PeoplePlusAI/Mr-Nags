@@ -33,35 +33,25 @@ dotenv.load_dotenv("ops/.env")
 
 token = os.getenv('TELEGRAM_BOT_TOKEN')
 
-run_once = False  # Declare it as a global variable
-
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO
 )
-class LanguagePreference:
+class BotInitializer:
     _instance = None
-    lang = "en"  # Default language is English
+    run_once = False
     
     def __new__(cls):
         if cls._instance is None:
-            cls._instance = super(LanguagePreference, cls).__new__(cls)
+            cls._instance - super(BotInitializer, cls).__new__(cls)
+            cls.run_once = True
         return cls._instance
 
-    @classmethod
-    def get_language(cls):
-        return cls.lang
-
-    @classmethod
-    def set_language(cls, new_lang):
-        cls.lang = new_lang
-
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    global run_once
-    if not run_once:
-        run_once = True
-        await context.bot.send_message(chat_id=update.effective_chat.id, text="Hello I am Mr. Nags, start raising a complaint with me")
-        await relay_handler(update, context)
+    BotInitializer()  # To initialize only once
+    
+    await context.bot.send_message(chat_id=update.effective_chat.id, text="Hello I am Mr. Nags, start raising a complaint with me")
+    await relay_handler(update, context)
 
 async def relay_handler(update: Update, context: CallbackContext):
     await language_handler(update, context)
@@ -144,14 +134,10 @@ async def talk(update: Update, context: ContextTypes.DEFAULT_TYPE, text: str):
     chat_id = update.effective_chat.id
     # text = update.message.text
     lang = context.user_data.get('lang')
-    
     # update_task = asyncio.create_task(progress_bar(context, chat_id, start_time))
     print('ok')
     response, history = bhashini_text_chat(chat_id,text, lang)
     await context.bot.send_message(chat_id=chat_id, text=response)
-    
-    #print(f"history status is {history.get('status')}")
-    #print(f"Time taken: {end_time - start_time}")
 
 async def talk__audio(update: Update, context: ContextTypes.DEFAULT_TYPE, voice):    
     lang = context.user_data.get('lang')

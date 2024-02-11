@@ -11,6 +11,7 @@ from utils.openai_utils import (
     get_assistant_message,
     create_assistant,
     transcribe_audio,
+    generate_audio
 )
 from utils.redis_utils import (
     get_redis_value,
