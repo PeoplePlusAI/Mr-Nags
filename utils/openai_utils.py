@@ -183,7 +183,11 @@ def upload_message(client, thread_id, input_message, assistant_id):
 
 def get_run_status(run, client, thread):
     delay = 5
-    run_status = run.status
+    try: 
+        run_status = run.status
+    except Exception as e:
+        print(e)
+    
     while run_status not in ["completed", "failed", "requires_action"]:
         print("Current run status:", run_status)  # check statement
         time.sleep(delay)
