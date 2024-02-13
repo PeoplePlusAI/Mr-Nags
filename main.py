@@ -1,9 +1,9 @@
-
 import os
 import base64
 import tempfile
 import time
 from typing import Union
+
 import asyncio
 import logging
 import dotenv
@@ -183,6 +183,8 @@ async def respond(update: Update, context: ContextTypes.DEFAULT_TYPE):
     print(f"history status is {history.get('status')}")
     print(f"Time taken: {end_time - start_time}")
     await context.bot.send_message(chat_id=chat_id, text=response)
+
+
 
 async def respond_audio(update: Update, context: ContextTypes.DEFAULT_TYPE):
     audio_file = await context.bot.get_file(update.message.voice.file_id)

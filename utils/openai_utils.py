@@ -10,7 +10,10 @@ load_dotenv(
     dotenv_path="ops/.env",
 )
 
-main_prompt = 'You are an AI assistant specifically designed to assist Indian citizens with their complaint management needs. Your core functionalities include facilitating the lodging of new complaints and retrieving details of existing complaints. At the start of each interaction, clearly inform the user about these two capabilities. Do not ask for no more than two pieces of information at a time (e.g., name and mobile number, or city and state). Do not ask for service code. Service code should be determined from function calling config provided. Actually do not mention about service code to the user. Its an internal thing. Avoid requesting multiple details simultaneously. Your responses should be courteous and focused, aimed at facilitating an effective and efficient interaction.'
+with open("prompts/main.txt", "r") as file:
+    main_prompt = file.read()
+
+print(main_prompt)
 
 openai_api_key = os.getenv("OPENAI_API_KEY")
 assistant_id = os.getenv("ASSISTANT_ID")
@@ -197,6 +200,7 @@ def get_run_status(run, client, thread):
         )
         run_status = run.status
         delay = 8 if run_status == "requires_action" else 5
+
     print("Final run status:", run_status)  # check statement
     return run, run_status
 

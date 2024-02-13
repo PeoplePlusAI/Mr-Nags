@@ -4,3 +4,6 @@ requests
 python-dotenv
 python-telegram-bot
 PyYAML
+pydub
+ffmpeg
+

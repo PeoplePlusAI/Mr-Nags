@@ -100,7 +100,7 @@ def search_complaint(data):
                 "uuid":"7e2b023a-2f7f-444c-a48e-78d75911387a",
                 "userName":data["username"],
                 "name":data["name"],
-                "mobileNumber":data["username"],
+                "mobileNumber":data["mobile_number"],
                 "emailId":"",
                 "locale":None,
                 "type":"CITIZEN",
