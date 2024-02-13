@@ -326,4 +326,6 @@ def bhashini_audio_chat(chat_id, audio_file, lang):
     print(f"The input message is : {input_message}")
     response, history =  chat(chat_id, input_message)
     output_message = bhashini_output(response, lang)
+    # response_audio = generate_audio(assistant_message, client)
+    # return response_audio, history
     return output_message, history
