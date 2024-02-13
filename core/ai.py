@@ -193,7 +193,7 @@ def bhashini_chat(chat_id, input_message):
     try:
         run = client.beta.threads.runs.retrieve(thread_id, run_id)
     except Exception as e:
-        run = None
+        pass
     try:
         thread = client.beta.threads.retrieve(thread_id)
         thread_id = thread.id
@@ -216,7 +216,6 @@ def bhashini_chat(chat_id, input_message):
         print('assistant_message:', assistant_message)  # Print the value of assistant_message
         print('ok6')
         
-
         history = {
             "thread_id": thread_id,
             "run_id": run.id,
