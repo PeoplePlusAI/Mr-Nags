@@ -108,11 +108,11 @@ async def query_handler(update: Update, context: CallbackContext):
 
     text_message = ""
     if lang == "en":
-        text_message = "Thank you for sharing the complaint with me."
+        text_message = "Thank you for being on the complaint process with me."
     elif lang == "hi":
-        text_message = "मुझसे शिकायत दर्ज करवाने के लिए धन्यवाद।"
+        text_message = "मेरे साथ शिकायत प्रक्रिया में बने रहने के लिए धन्यवाद।"
     elif lang == "pa":
-        text_message = "ਮੇਰੇ ਨਾਲ ਸ਼ਿਕਾਇਤ ਦਰਜ ਕਰਵਾਉਣ ਲਈ ਧੰਨਵਾਦ"
+        text_message = "ਮੇਰੇ ਨਾਲ ਸ਼ਿਕਾਇਤ ਪ੍ਰਕਿਰਿਆ 'ਤੇ ਹੋਣ ਲਈ ਤੁਹਾਡਾ ਧੰਨਵਾਦ।"
 
     await context.bot.send_message(chat_id=update.effective_chat.id, text=text_message)
 
