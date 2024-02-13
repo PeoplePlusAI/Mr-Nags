@@ -320,7 +320,7 @@ def bhashini_text_chat(chat_id, text, lang): #lang
     Manipuri, Marathi, Nepali, Odia, Punjabi, Sanskrit, Santali, Sindhi, Tamil, Telugu, Urdu'''
     # Assuming original input is in Punjabi, translating into English using Bhashini API
     input_message = bhashini_input(text, lang)
-    response, history = chat(chat_id, input_message)
+    response, history = bhashini_chat(chat_id, input_message)
     # translating English to Punjabi using Bhashini API
     # output_message = bhashini_output(response, lang)
     return response, history
@@ -328,5 +328,5 @@ def bhashini_text_chat(chat_id, text, lang): #lang
 def bhashini_audio_chat(chat_id, audio_file, lang):
     input_message = bhashini_asr(audio_file, lang)
     print(f"The input message is : {input_message}")
-    assistant_message, history =  chat(chat_id, input_message)
+    assistant_message, history =  bhashini_chat(chat_id, input_message)
     return assistant_message, history
