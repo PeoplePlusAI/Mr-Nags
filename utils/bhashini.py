@@ -91,43 +91,6 @@ def bhashini_output(text, lang):
     else:
         return "Error: {response.status_code}"
 
-'''
-def bhashini_input_tts(text, lang):
-    lang_ = config['languages'][lang]
-    data = {
-        "inputText": text,
-        "inputLanguage": lang_,
-        "outputLanguage": "English"
-    }
-    headers = {'Content-Type': 'application/json'}
-    
-    response = requests.post("https://tts.bhashini.ai/v1/translate", headers=headers, json=data)
-
-    if response.status_code == 200:
-        return response.text
-    else:
-        print("Error:", response.status_code, response.text)
-'''
-
-'''
-def bhashini_output_tts(text,lang):
-    lang_ = config['languages'][lang]
-    print(f"The language is: {lang_}")
-    print('done')
-
-    data = {
-        "inputText": text,
-        "inputLanguage": "English",
-        "outputLanguage": lang_
-    }
-    headers = {'Content-Type': 'application/json'}
-    response = requests.post("https://tts.bhashini.ai/v1/translate", headers=headers, json=data)
-
-    if response.status_code == 200:
-        return response.text
-    else:
-        print("Error:", response.status_code, response.text)
-'''
 def bhashini_asr(audio_content, lang):
     
     data = {
@@ -171,3 +134,41 @@ def bhashini_asr(audio_content, lang):
         # return response_asr
     else:
         return "Error: {response.status_code}"
+    
+    '''
+def bhashini_input_tts(text, lang):
+    lang_ = config['languages'][lang]
+    data = {
+        "inputText": text,
+        "inputLanguage": lang_,
+        "outputLanguage": "English"
+    }
+    headers = {'Content-Type': 'application/json'}
+    
+    response = requests.post("https://tts.bhashini.ai/v1/translate", headers=headers, json=data)
+
+    if response.status_code == 200:
+        return response.text
+    else:
+        print("Error:", response.status_code, response.text)
+'''
+
+'''
+def bhashini_output_tts(text,lang):
+    lang_ = config['languages'][lang]
+    print(f"The language is: {lang_}")
+    print('done')
+
+    data = {
+        "inputText": text,
+        "inputLanguage": "English",
+        "outputLanguage": lang_
+    }
+    headers = {'Content-Type': 'application/json'}
+    response = requests.post("https://tts.bhashini.ai/v1/translate", headers=headers, json=data)
+
+    if response.status_code == 200:
+        return response.text
+    else:
+        print("Error:", response.status_code, response.text)
+'''

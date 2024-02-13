@@ -185,7 +185,7 @@ def get_run_status(run, client, thread):
     delay = 5
     run_status = run.status
     while run_status not in ["completed", "failed", "requires_action"]:
-        time.sleep(delay)
+        time.sleep(delay) 
         run = client.beta.threads.runs.retrieve(
             thread_id=thread.id,
             run_id=run.id,

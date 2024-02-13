@@ -7,6 +7,7 @@ from typing import Union
 import asyncio
 import logging
 import dotenv
+
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
     ApplicationBuilder,
@@ -18,7 +19,7 @@ from telegram.ext import (
     CallbackQueryHandler,
 )
 
-from core.ai import chat, audio_chat, bhashini_text_chat, bhashini_audio_chat
+from core.ai import chat, audio_chat, bhashini_text_chat, bhashini_audio_chat, bhashini_chat
 from utils.redis_utils import set_redis
 from utils.openai_utils import get_duration_pydub, get_random_wait_messages
 
@@ -177,7 +178,7 @@ async def respond(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
     if wait_message:
         await context.bot.send_message(chat_id=chat_id, text=wait_message)
-    response, history = chat(chat_id, text)
+    response, history = bhashini_chat(chat_id, text)
     end_time = time.time()
     print(f"history status is {history.get('status')}")
     print(f"Time taken: {end_time - start_time}")
