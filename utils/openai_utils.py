@@ -182,13 +182,17 @@ def upload_message(client, thread_id, input_message, assistant_id):
         thread_id=thread_id,
         assistant_id=assistant_id,
     )
-    
     return run
 
 def get_run_status(run, client, thread):
     delay = 5
-    run_status = run.status
+    try: 
+        run_status = run.status
+    except Exception as e:
+        print(e)
+    
     while run_status not in ["completed", "failed", "requires_action"]:
+        print("Current run status:", run_status)  # check statement
         time.sleep(delay)
         run = client.beta.threads.runs.retrieve(
             thread_id=thread.id,
@@ -196,6 +200,8 @@ def get_run_status(run, client, thread):
         )
         run_status = run.status
         delay = 8 if run_status == "requires_action" else 5
+
+    print("Final run status:", run_status)  # check statement
     return run, run_status
 
 def get_assistant_message(client, thread_id):
