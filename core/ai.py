@@ -170,6 +170,12 @@ def chat(chat_id, input_message):
                 
     return assistant_message, history
 
+def audio_chat(chat_id, audio_file):
+    input_message = transcribe_audio(audio_file, client)
+    print(f"The input message is : {input_message}")
+    assistant_message, history =  chat(chat_id, input_message)
+    return assistant_message, history
+
 def bhashini_chat(chat_id, message):
     history = get_redis_value(chat_id)
     if history == None:
@@ -184,25 +190,24 @@ def bhashini_chat(chat_id, message):
     run_id = history.get("run_id")
     status = history.get("status")
     
-    run = None
     if thread_id and run_id:
-        try:
             run = client.beta.threads.runs.retrieve(thread_id, run_id)
-        except Exception as e:
-            pass
+            thread_id = thread.id
+    else:
+        run = None
 
-    thread = None
     if thread_id:
         try:
             thread = client.beta.threads.retrieve(thread_id)
         except Exception as e:
             thread = create_thread(client)
+            thread_id = thread.id
     
     if status == "completed" or status == None:
         run = upload_message(client, thread_id, message, assistant.id)
         run, status = get_run_status(run, client, thread)
         
-        resp = get_assistant_message(client, thread.id)
+        resp = get_assistant_message(client, thread_id)
         # this has to be in chosen language
         try:
             lang = get_redis_value('lang').decode('utf-8')
@@ -214,7 +219,7 @@ def bhashini_chat(chat_id, message):
         print('ok6')
         
         history = {
-            "thread_id" : thread.id,
+            "thread_id" : thread_id,
             "run_id": run.id,
             "status": status.id
         }
@@ -261,7 +266,7 @@ def bhashini_chat(chat_id, message):
                     )
                     run,status = get_run_status(run, client, thread)
                     
-                    resp1 = get_assistant_message(client, thread.id)
+                    resp1 = get_assistant_message(client, thread_id)
                     message = bhashini_output(resp1, lang=lang)
                     print('ok8')
                     
@@ -292,7 +297,7 @@ def bhashini_chat(chat_id, message):
                     )
                     run,status = get_run_status(run, client, thread)
                     
-                    resp = get_assistant_message(client, thread.id)
+                    resp = get_assistant_message(client, thread_id)
                     message = bhashini_output(resp, lang=lang)
                     print('ok7')
                     
@@ -306,12 +311,6 @@ def bhashini_chat(chat_id, message):
                     return message, history
                 else:
                     return "Complaint not found", history
-    return assistant_message, history
-
-def audio_chat(chat_id, audio_file):
-    input_message = transcribe_audio(audio_file, client)
-    print(f"The input message is : {input_message}")
-    assistant_message, history =  chat(chat_id, input_message)
     return assistant_message, history
 
 def bhashini_text_chat(chat_id, text, lang): #lang
