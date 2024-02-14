@@ -185,6 +185,7 @@ def bhashini_text_chat(chat_id, text, lang): #lang
     # lang = get_redis_value('lang').decode('utf-8')
     input_message = bhashini_input(text, lang)
     response, history = chat(chat_id, input_message)
+    print(response)
     # translating English to Punjabi using Bhashini API
     output_message = bhashini_output(response, lang)
     return output_message, history
