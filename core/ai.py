@@ -50,8 +50,10 @@ assistant = create_assistant(client, assistant_id)
 def chat(chat_id, input_message):
     
     assistant_message = "Something went wrong. Please try again later."
-
+    
     history = get_redis_value(chat_id)
+    print(history)
+
     if history == None:
         history = {
             "thread_id": None,
@@ -66,17 +68,19 @@ def chat(chat_id, input_message):
 
     try:
         run = client.beta.threads.runs.retrieve(thread_id, run_id)
-    except Exception as e:
+    except:
         run = None
     try:
         thread = client.beta.threads.retrieve(thread_id)
         thread_id = thread.id
-    except Exception as e:
+    except:
         thread = create_thread(client)
         thread_id = thread.id
 
     if status == "completed" or status == None:
-        run = upload_message(client, thread_id, input_message, assistant.id)
+        assistant_ID = assistant.id
+        print(f"Assistant id: {assistant_ID}")
+        run = upload_message(client, thread_id, input_message, assistant_ID)
         run, status = get_run_status(run, client, thread)
 
         assistant_message = get_assistant_message(client, thread_id)
@@ -87,6 +91,7 @@ def chat(chat_id, input_message):
             "status": status,
         }
         set_redis(chat_id, json.dumps(history))
+        print(history)
     
     if status == "requires_action":
         if run:
@@ -167,7 +172,7 @@ def chat(chat_id, input_message):
                     return message, history
                 else:
                     return "Complaint not found", history
-                
+        
     return assistant_message, history
 
 def audio_chat(chat_id, audio_file):
@@ -185,9 +190,12 @@ def bhashini_text_chat(chat_id, text, lang): #lang
     # lang = get_redis_value('lang').decode('utf-8')
     input_message = bhashini_input(text, lang)
     response, history = chat(chat_id, input_message)
-    print(response)
+    print(f"the response is: {response}")
+    print(f"the history is: {history}")
     # translating English to Punjabi using Bhashini API
-    output_message = bhashini_output(response, lang)
+    temp_message = bhashini_output(response, lang)
+    output_message = f"the problem you've entered is this:{temp_message}"
+    
     return output_message, history
 
 def bhashini_audio_chat(chat_id, audio_file, lang):
