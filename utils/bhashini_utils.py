@@ -64,7 +64,6 @@ def bhashini_translate(text, source_lang, target_lang):
         )
         return i_answer
     else:
-        print("there is an issue here")
         return text
 
 

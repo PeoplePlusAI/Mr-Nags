@@ -14,8 +14,6 @@ load_dotenv(
 with open("prompts/prompt.txt", "r") as file:
     main_prompt = file.read().replace('\n', ' ')
 
-print(main_prompt)
-
 openai_api_key = os.getenv("OPENAI_API_KEY")
 assistant_id = os.getenv("ASSISTANT_ID")
 model_name = os.getenv("MODEL_NAME")
@@ -185,7 +183,6 @@ def get_run_status(run, client, thread):
         run_status = None
     
     while run_status not in ["completed", "failed", "requires_action"]:
-        print("Current run status:", run_status)  # check statement
         time.sleep(delay)
         run = client.beta.threads.runs.retrieve(
             thread_id=thread.id,
@@ -194,7 +191,6 @@ def get_run_status(run, client, thread):
         run_status = run.status
         delay = 8 if run_status == "requires_action" else 5
 
-    print("Final run status:", run_status)  # check statement
     return run, run_status
 
 def get_assistant_message(client, thread_id):
@@ -238,11 +234,9 @@ def get_random_wait_messages(not_always=False, lang="en"):
         if rand == 1:
             random_message = random.choice(messages)
             random_message = bhashini_translate(random_message, "en", lang)
-            print(random_message)
         else:
             random_message = ""
     else:
         random_message = random.choice(messages)
         random_message = bhashini_translate(random_message, "en", lang)
-        print(random_message)
     return random_message

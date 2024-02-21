@@ -38,7 +38,6 @@ USERNAME = os.getenv("USERNAME")
 PASSWORD = os.getenv("PASSWORD")
 
 assistant_id = get_redis_value("assistant_id")
-print(assistant_id)
 
 client = OpenAI(
     api_key=openai_api_key,
