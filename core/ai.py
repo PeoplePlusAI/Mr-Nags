@@ -11,7 +11,8 @@ from utils.openai_utils import (
     get_assistant_message,
     create_assistant,
     transcribe_audio,
-    generate_audio
+    generate_audio,
+    create_client
 )
 from utils.redis_utils import (
     get_redis_value,
@@ -39,11 +40,10 @@ PASSWORD = os.getenv("PASSWORD")
 
 assistant_id = get_redis_value("assistant_id")
 
-client = OpenAI(
-    api_key=openai_api_key,
-)
+client = create_client(openai_api_key)
 
 assistant = create_assistant(client, assistant_id)
+set_redis("assistant_id", assistant.id)
 
 
 

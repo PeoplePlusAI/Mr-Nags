@@ -32,7 +32,7 @@ from core.ai import (
 from utils.redis_utils import set_redis
 from utils.openai_utils import (
     get_duration_pydub, 
-    get_random_wait_messages
+    get_translated_wait_messages
 )
 
 dotenv.load_dotenv("ops/.env")
@@ -127,8 +127,7 @@ async def chat(update: Update, context: ContextTypes.DEFAULT_TYPE, text: str):
     
     chat_id = update.effective_chat.id
     lang = context.user_data.get('lang')
-    wait_message = get_random_wait_messages(
-        not_always=True,
+    wait_message = get_translated_wait_messages(
         lang=lang
     )
     if wait_message:
@@ -148,8 +147,7 @@ async def talk(update: Update, context: ContextTypes.DEFAULT_TYPE, voice):
         await audio_file.download_to_drive(custom_path=temp_audio_file.name)
         chat_id = update.effective_chat.id
 
-        wait_message = get_random_wait_messages(
-            not_always=True,
+        wait_message = get_translated_wait_messages(
             lang=lang
         )
         if wait_message:
