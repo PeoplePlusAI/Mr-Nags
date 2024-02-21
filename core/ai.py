@@ -78,8 +78,7 @@ def chat(chat_id, input_message):
         thread_id = thread.id
 
     if status == "completed":
-        assistant_ID = assistant.id
-        run = upload_message(client, thread_id, input_message, assistant_ID)
+        run = upload_message(client, thread_id, input_message, assistant.id)
         run, status = get_run_status(run, client, thread)
 
         assistant_message = get_assistant_message(client, thread_id)
@@ -95,6 +94,10 @@ def chat(chat_id, input_message):
         if run:
             tools_to_call = run.required_action.submit_tool_outputs.tool_calls
         else:
+            run = client.beta.threads.runs.retrieve(
+                thread_id=thread_id,
+                run_id=run_id
+            )
             run, status = get_run_status(run, client, thread)
             tools_to_call = run.required_action.submit_tool_outputs.tool_calls
 

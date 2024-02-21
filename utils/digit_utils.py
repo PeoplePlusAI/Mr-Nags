@@ -34,13 +34,13 @@ def file_complaint(data):
         "additionalDetail": {},
         "source": "web",
         "address": {
-            "city": data["city"],
-            "district": data["district"],
-            "region": data["region"],
-            "state": data["state"],
+            "city": data.get("city", ""),
+            "district": data.get("district", ""),
+            "region": data.get("region", ""),
+            "state": data.get("state", ""),
             "locality": {
                 "code": "SUN11",
-                "name": data["locality"]
+                "name": data.get("locality", "")
             },
             "geoLocation": {}
         }

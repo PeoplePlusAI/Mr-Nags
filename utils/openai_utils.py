@@ -99,13 +99,7 @@ raise_complaint ={
         "required": [
             "description",
             "service_code",
-            "city",
-            "state",
-            "district",
-            "region",
             "locality",
-            "username",
-            "password",
             "name",
             "mobile_number"
         ]
@@ -178,21 +172,18 @@ def upload_message(client, thread_id, input_message, assistant_id):
     run = create_run(client, thread_id, assistant_id)
     return run
 
-def get_run_status(run, client, thread, assistant_id=assistant_id):
+def get_run_status(run, client, thread):
     delay = 5
     try: 
         run_status = run.status
-        run_id = run.id
     except Exception as e:
-        run = create_run(client, thread.id, assistant_id)
-        run_status = run_status
-        run_id = run.id
+        return None, "failed"
 
     while run_status not in ["completed", "failed", "requires_action"]:
         time.sleep(delay)
         run = client.beta.threads.runs.retrieve(
             thread_id=thread.id,
-            run_id=run_id,
+            run_id=run.id,
         )
         run_status = run.status
         delay = 8 if run_status == "requires_action" else 5
