@@ -11,7 +11,7 @@ load_dotenv(
     dotenv_path="ops/.env",
 )
 
-with open("prompts/prompt.txt", "r") as file:
+with open("prompts/main.txt", "r") as file:
     main_prompt = file.read().replace('\n', ' ')
 
 openai_api_key = os.getenv("OPENAI_API_KEY")
@@ -162,31 +162,37 @@ def create_thread(client):
     thread = client.beta.threads.create()
     return thread
 
-def upload_message(client, thread_id, input_message, assistant_id):
-    message = client.beta.threads.messages.create(
-        thread_id=thread_id,
-        role="user",
-        content=input_message
-    )
-
+def create_run(client, thread_id, assistant_id):
     run = client.beta.threads.runs.create(
         thread_id=thread_id,
         assistant_id=assistant_id,
     )
     return run
 
-def get_run_status(run, client, thread):
+def upload_message(client, thread_id, input_message, assistant_id):
+    message = client.beta.threads.messages.create(
+        thread_id=thread_id,
+        role="user",
+        content=input_message
+    )
+    run = create_run(client, thread_id, assistant_id)
+    return run
+
+def get_run_status(run, client, thread, assistant_id=assistant_id):
     delay = 5
     try: 
         run_status = run.status
+        run_id = run.id
     except Exception as e:
-        run_status = None
-    
+        run = create_run(client, thread.id, assistant_id)
+        run_status = run_status
+        run_id = run.id
+
     while run_status not in ["completed", "failed", "requires_action"]:
         time.sleep(delay)
         run = client.beta.threads.runs.retrieve(
             thread_id=thread.id,
-            run_id=run.id,
+            run_id=run_id,
         )
         run_status = run.status
         delay = 8 if run_status == "requires_action" else 5
