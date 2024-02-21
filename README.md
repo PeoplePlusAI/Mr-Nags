@@ -13,6 +13,7 @@ Mr Nags is a complaint filing chatbot using egov digit platform.
     USERNAME=<digit-username>
     PASSWORD=<digit-password>
     MODEL_NAME=<model-name eg: gpt-3.5-turbo>
+    BHASHINI_KEY=<bhashini-key>
     ```
 2. For normal running
 
