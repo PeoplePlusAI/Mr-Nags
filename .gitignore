@@ -1,13 +1,10 @@
 .env
-
-# FILEPATH: /Users/gopikrishnansasikumar/projects/peopleplus/Mr-Nags/.gitignore
-# BEGIN: python-gitignore
 *.pyc
 __pycache__/
+.pytest_cache/
 venv/
 *.env
 .vscode/
 .DS_store
 /Users/leader/Downloads/AI_Army/ML_Basics/NLP/My_ChatBot/Mr-Nags/notebooks/egov
 changes.patch
-# END: python-gitignore
