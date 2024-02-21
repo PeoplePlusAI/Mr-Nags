@@ -185,7 +185,7 @@ def audio_chat(chat_id, audio_file):
     input_message = transcribe_audio(audio_file, client)
     assistant_message, history =  chat(chat_id, input_message)
     response_audio = generate_audio(assistant_message, client)
-    return response_audio, history
+    return response_audio, assistant_message, history
 
 def bhashini_text_chat(chat_id, text, lang): 
     '''

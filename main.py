@@ -113,17 +113,29 @@ async def preferred_language_callback(update: Update, context: CallbackContext):
 async def response_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await query_handler(update, context)
 
+def check_change_language_query(text):
+    return text.lower() in ["change language", "set language", "language"]
+
 async def query_handler(update: Update, context: CallbackContext):
+
+    lang = context.user_data.get('lang')
+    if not lang:
+        await language_handler(update, context)
+        return
 
     if update.message.text:
         text = update.message.text
-        await chat(update, context, text)
+        print(f"text is {text}")
+        if check_change_language_query(text):
+            await language_handler(update, context)
+            return
+        await chat_handler(update, context, text)
     elif update.message.voice:
         voice = await context.bot.get_file(update.message.voice.file_id)
-        await talk(update, context, voice)
+        await talk_handler(update, context, voice)
 
 
-async def chat(update: Update, context: ContextTypes.DEFAULT_TYPE, text: str):
+async def chat_handler(update: Update, context: ContextTypes.DEFAULT_TYPE, text: str):
     
     chat_id = update.effective_chat.id
     lang = context.user_data.get('lang')
@@ -139,7 +151,7 @@ async def chat(update: Update, context: ContextTypes.DEFAULT_TYPE, text: str):
         response, history = bhashini_text_chat(chat_id,text, lang)
     await context.bot.send_message(chat_id=chat_id, text=response)
 
-async def talk(update: Update, context: ContextTypes.DEFAULT_TYPE, voice):    
+async def talk_handler(update: Update, context: ContextTypes.DEFAULT_TYPE, voice):    
     lang = context.user_data.get('lang')
     # getting audio file
     audio_file = voice
@@ -160,7 +172,7 @@ async def talk(update: Update, context: ContextTypes.DEFAULT_TYPE, voice):
             audio_base64 = base64.b64encode(audio_data).decode('utf-8')
 
         if lang == 'en':
-            response_audio, history = audio_chat(
+            response_audio, assistant_message, history = audio_chat(
                 chat_id, audio_file=open(temp_audio_file.name, "rb")
             )
             response_audio.stream_to_file(temp_audio_file.name)
@@ -171,6 +183,9 @@ async def talk(update: Update, context: ContextTypes.DEFAULT_TYPE, voice):
                 duration=duration, 
                 filename="response.wav",
                 performer="Mr. Nags",
+            )
+            await context.bot.send_message(
+                chat_id=chat_id, text=assistant_message
             )
         else:
             response, history = bhashini_audio_chat(
@@ -190,7 +205,7 @@ if __name__ == '__main__':
     ).read_timeout(30).write_timeout(30).build()
     start_handler = CommandHandler('start', start)
     language_handler_ = CommandHandler('set_language', language_handler)
-    chosen_language = CallbackQueryHandler(preferred_language_callback)
+    chosen_language = CallbackQueryHandler(preferred_language_callback, pattern='[1-3]')
     application.add_handler(start_handler)
     application.add_handler(language_handler_)
     application.add_handler(chosen_language)
