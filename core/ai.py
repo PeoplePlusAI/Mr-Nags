@@ -48,7 +48,7 @@ set_redis("assistant_id", assistant.id)
 
 
 
-def chat(chat_id, input_message):
+def chat(chat_id, input_message, client=client):
     
     assistant_message = "Something went wrong. Please try again later."
     
@@ -181,13 +181,13 @@ def chat(chat_id, input_message):
         
     return assistant_message, history
 
-def audio_chat(chat_id, audio_file):
+def audio_chat(chat_id, audio_file, client=client):
     input_message = transcribe_audio(audio_file, client)
     assistant_message, history =  chat(chat_id, input_message)
     response_audio = generate_audio(assistant_message, client)
     return response_audio, history
 
-def bhashini_text_chat(chat_id, text, lang): 
+def bhashini_text_chat(chat_id, text, lang, client=client): 
     '''
     For some specific Indian languages like Tamil, Marathi, Kannada , 
     Bhashini API works better than Google Translate API
@@ -199,12 +199,12 @@ def bhashini_text_chat(chat_id, text, lang):
     #English using Bhashini API
     
     input_message = bhashini_translate(text, lang, "en")
-    response, history = chat(chat_id, input_message)
+    response, history = chat(chat_id, input_message, client)
     response = bhashini_translate(response, "en", lang)
     return response, history
 
-def bhashini_audio_chat(chat_id, audio_file, lang):
+def bhashini_audio_chat(chat_id, audio_file, lang, client=client):
     input_message = bhashini_asr(audio_file, lang)
-    response, history = chat(chat_id, input_message)
+    response, history = chat(chat_id, input_message, client)
     response = bhashini_translate(response, "en", lang)
     return response, history
