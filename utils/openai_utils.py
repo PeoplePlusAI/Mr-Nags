@@ -2,6 +2,7 @@ from dotenv import load_dotenv
 from utils.bhashini_utils import bhashini_translate
 from utils.redis_utils import set_redis
 import random
+import openai
 from pydub import AudioSegment
 import time
 import os
@@ -14,7 +15,6 @@ load_dotenv(
 with open("prompts/prompt.txt", "r") as file:
     main_prompt = file.read().replace('\n', ' ')
 
-openai_api_key = os.getenv("OPENAI_API_KEY")
 assistant_id = os.getenv("ASSISTANT_ID")
 model_name = os.getenv("MODEL_NAME")
 
@@ -135,6 +135,10 @@ search_complaint = {
     }
 }
 
+def create_client(api_key):
+    client = openai.Client(api_key=api_key)
+    return client
+
 def create_assistant(client, assistant_id):
     try:
         assistant = client.beta.assistants.retrieve(assistant_id=assistant_id)
@@ -143,7 +147,7 @@ def create_assistant(client, assistant_id):
         assistant = client.beta.assistants.create(
         name="Complaint Assistant",
         instructions=main_prompt,
-        model="gpt-4",
+        model=model_name,
         tools=[
                 {
                     "type": "function",
@@ -155,7 +159,6 @@ def create_assistant(client, assistant_id):
                 }
             ]
         )
-        set_redis("assistant_id", assistant.id)
         return assistant
 
 def create_thread(client):
@@ -220,23 +223,28 @@ def get_duration_pydub(file_path):
    duration = audio_file.duration_seconds
    return duration
 
-def get_random_wait_messages(not_always=False, lang="en"):
+def get_random_wait_messages(always=False):
     messages = [
-        "Please wait",
         "I am thinking",
         "I am processing your request",
         "Hold on",
         "I am on it",
         "I am working on it",
     ]
-    if not_always:
+    if always:
         rand = random.randint(0, 2)
         if rand == 1:
             random_message = random.choice(messages)
-            random_message = bhashini_translate(random_message, "en", lang)
         else:
             random_message = ""
     else:
         random_message = random.choice(messages)
-        random_message = bhashini_translate(random_message, "en", lang)
     return random_message
+
+def get_translated_wait_messages(lang, always=False):
+    random_message = get_random_wait_messages(always)
+    if random_message: 
+        return bhashini_translate(random_message, "en", lang)
+    else:
+        return random_message
+
