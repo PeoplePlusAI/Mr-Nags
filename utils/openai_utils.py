@@ -1,4 +1,5 @@
 from dotenv import load_dotenv
+from utils.bhashini_utils import bhashini_translate
 from utils.redis_utils import set_redis
 import random
 from pydub import AudioSegment
@@ -12,8 +13,6 @@ load_dotenv(
 
 with open("prompts/prompt.txt", "r") as file:
     main_prompt = file.read().replace('\n', ' ')
-
-print(main_prompt)
 
 openai_api_key = os.getenv("OPENAI_API_KEY")
 assistant_id = os.getenv("ASSISTANT_ID")
@@ -88,14 +87,6 @@ raise_complaint ={
                 "type": "string",
                 "description": "locality of complaint"
             },
-            #"username": {
-            #    "type": "string",
-            #    "description": "username of user"
-            #},
-            #"password": {
-            #    "type": "string",
-            #    "description": "password of user"
-            #},
             "name": {
                 "type": "string",
                 "description": "name of user"
@@ -189,10 +180,9 @@ def get_run_status(run, client, thread):
     try: 
         run_status = run.status
     except Exception as e:
-        print(e)
+        run_status = None
     
     while run_status not in ["completed", "failed", "requires_action"]:
-        print("Current run status:", run_status)  # check statement
         time.sleep(delay)
         run = client.beta.threads.runs.retrieve(
             thread_id=thread.id,
@@ -201,7 +191,6 @@ def get_run_status(run, client, thread):
         run_status = run.status
         delay = 8 if run_status == "requires_action" else 5
 
-    print("Final run status:", run_status)  # check statement
     return run, run_status
 
 def get_assistant_message(client, thread_id):
@@ -231,22 +220,23 @@ def get_duration_pydub(file_path):
    duration = audio_file.duration_seconds
    return duration
 
-def get_random_wait_messages(not_always=False):
+def get_random_wait_messages(not_always=False, lang="en"):
     messages = [
-        "Please wait...",
-        "I am thinking...",
-        "I am processing your request...",
-        "Hold on...",
-        "I am on it...",
-        "I am working on it...",
+        "Please wait",
+        "I am thinking",
+        "I am processing your request",
+        "Hold on",
+        "I am on it",
+        "I am working on it",
     ]
     if not_always:
         rand = random.randint(0, 2)
-        print(rand)
         if rand == 1:
             random_message = random.choice(messages)
+            random_message = bhashini_translate(random_message, "en", lang)
         else:
             random_message = ""
     else:
         random_message = random.choice(messages)
+        random_message = bhashini_translate(random_message, "en", lang)
     return random_message

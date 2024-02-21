@@ -82,8 +82,6 @@ def file_complaint(data):
         response_data = response.json()
         return response_data
     else:
-        print(response.content)
-        print(f"Error: {response.status_code}")
         return None
     
 def search_complaint(data):
@@ -126,8 +124,6 @@ def search_complaint(data):
         response_data = response.json()
         return response_data
     else:
-        print(response.content)
-        print(f"Error: {response.status_code}")
         return None
 
     
