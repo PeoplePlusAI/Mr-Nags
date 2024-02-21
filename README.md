@@ -35,6 +35,14 @@ Mr Nags is a complaint filing chatbot using egov digit platform.
 4. Open Telegram and search for `@YourBotName` and start chatting with the bot.
 
 
+## Run Tests
+
+Run the following command to run the tests:
+```
+pytest tests
+```
+
+
 ## Usage
 
 1. To start a conversation with the bot, start having a conversation by saying hey, hello or I have a complaint
