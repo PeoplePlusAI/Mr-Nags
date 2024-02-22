@@ -101,6 +101,9 @@ raise_complaint ={
             "service_code",
             "locality",
             "city",
+            "state",
+            "district",
+            "region",
             "name",
             "mobile_number"
         ]
