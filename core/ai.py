@@ -267,11 +267,6 @@ def chat(chat_id, input_message, client=client, assistant_id=assistant_id):
             input_message, history, assistant_id
         )      
         thread_id, run_id, status = set_metadata(chat_id, history)
-        history = {
-            "thread_id": thread_id,
-            "run_id": run_id,
-            "status": status,
-        }
     if status == "requires_action":
         tools_to_call, run_id, status = get_tools_to_call(
             client, thread_id, run_id
