@@ -180,7 +180,7 @@ def process_search_complaint_action(parameters, tool_id, thread_id, run_id):
         ]
         run = client.beta.threads.runs.submit_tool_outputs(
             thread_id=thread_id,
-            run_id=run.id,
+            run_id=run_id,
             tool_outputs=tool_output_array
         )
         run_id, status = get_run_status(client, thread_id, run.id)
