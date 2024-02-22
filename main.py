@@ -203,10 +203,10 @@ if __name__ == '__main__':
     application = ApplicationBuilder().token(
         token
     ).read_timeout(30).write_timeout(30).build()
-    start_handler = CommandHandler('start', start)
+    #start_handler = CommandHandler('start', start)
     language_handler_ = CommandHandler('set_language', language_handler)
     chosen_language = CallbackQueryHandler(preferred_language_callback, pattern='[1-3]')
-    application.add_handler(start_handler)
+    #application.add_handler(start_handler)
     application.add_handler(language_handler_)
     application.add_handler(chosen_language)
     application.add_handler(
