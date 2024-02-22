@@ -101,9 +101,6 @@ raise_complaint ={
             "service_code",
             "locality",
             "city",
-            "state",
-            "district",
-            "region",
             "name",
             "mobile_number"
         ]
@@ -165,7 +162,8 @@ def create_run(client, thread_id, assistant_id):
         thread_id=thread_id,
         assistant_id=assistant_id,
     )
-    return run
+    return run.id, run.status
+
 
 def upload_message(client, thread_id, input_message, assistant_id):
     message = client.beta.threads.messages.create(
@@ -173,10 +171,14 @@ def upload_message(client, thread_id, input_message, assistant_id):
         role="user",
         content=input_message
     )
-    run = create_run(client, thread_id, assistant_id)
-    return run
+    run_id, run_status = create_run(client, thread_id, assistant_id)
+    return run_id, run_status
 
-def get_run_status(run, client, thread):
+def get_run_status(client, thread_id, run_id):
+    run = client.beta.threads.runs.retrieve(
+        thread_id=thread_id,
+        run_id=run_id
+    )
     delay = 5
     try: 
         run_status = run.status
@@ -187,13 +189,22 @@ def get_run_status(run, client, thread):
     while run_status not in ["completed", "failed", "requires_action"]:
         time.sleep(delay)
         run = client.beta.threads.runs.retrieve(
-            thread_id=thread.id,
+            thread_id=thread_id,
             run_id=run.id,
         )
+        run_id = run.id
         run_status = run.status
         delay = 8 if run_status == "requires_action" else 5
 
-    return run, run_status
+    return run_id, run_status
+
+def get_tools_to_call(client, thread_id, run_id):
+    run = client.beta.threads.runs.retrieve(
+        run_id=run_id,
+        thread_id=thread_id
+    )
+    tools_to_call = run.required_action.submit_tool_outputs.tool_calls
+    return tools_to_call, run.id, run.status
 
 def get_assistant_message(client, thread_id):
     messages = client.beta.threads.messages.list(
