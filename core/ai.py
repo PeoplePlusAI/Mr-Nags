@@ -20,7 +20,8 @@ from utils.redis_utils import (
 
 from utils.bhashini_utils import (
     bhashini_translate,
-    bhashini_asr
+    bhashini_asr,
+    bhashini_tts
 )
 
 import os
@@ -217,12 +218,13 @@ def bhashini_text_chat(chat_id, text, lang):
     #English using Bhashini API
     
     input_message = bhashini_translate(text, lang, "en")
-    response, history = chat(chat_id, input_message)
-    response = bhashini_translate(response, "en", lang)
-    return response, history
+    response_en, history = chat(chat_id, input_message)
+    response = bhashini_translate(response_en, "en", lang)
+    return response, response_en, history
 
 def bhashini_audio_chat(chat_id, audio_file, lang):
     input_message = bhashini_asr(audio_file, lang, "en")
     response, history = chat(chat_id, input_message)
     response = bhashini_translate(response, "en", lang)
-    return response, history
+    audio_content = bhashini_tts(response, lang)
+    return audio_content, response, history
