@@ -58,31 +58,37 @@ def chat(chat_id, input_message):
         history = {
             "thread_id": None,
             "run_id": None,
-            "status": "completed",
+            "status": None,
         }
     else:
         history = json.loads(history)
+
+    print(history)
     thread_id = history.get("thread_id")
     run_id = history.get("run_id")
     status = history.get("status")
 
-    try:
-        run = client.beta.threads.runs.retrieve(thread_id, run_id)
-    except:
-        run = None
-    try:
+    if thread_id:
         thread = client.beta.threads.retrieve(thread_id)
         thread_id = thread.id
-    except:
+    else:
         thread = create_thread(client)
         thread_id = thread.id
 
-    if status == "completed":
+    print(f"thread id is {thread_id}")
+
+    if status == "completed" or status == None:
         run = upload_message(client, thread_id, input_message, assistant.id)
+        print("run.status is", run.status)
         run, status = get_run_status(run, client, thread)
+        print(f"input message is {input_message}")
+        print(f"run status is {run.status}")
+        if status == "completed":
+            assistant_message = get_assistant_message(client, thread_id)
+        else:
+            assistant_message = "something went wrong please check the openAI API"
 
-        assistant_message = get_assistant_message(client, thread_id)
-
+        print(f"assistant message is {assistant_message}")
         history = {
             "thread_id": thread_id,
             "run_id": run.id,
@@ -110,6 +116,7 @@ def chat(chat_id, input_message):
                 }
             )
             func_name = tool.function.name
+            print(f"function name is {func_name}")
             parameters = json.loads(tool.function.arguments)
             parameters["auth_token"] = auth_token
             parameters["username"] = username
@@ -137,7 +144,11 @@ def chat(chat_id, input_message):
                     )
                     run, status = get_run_status(run, client, thread)
 
-                    message = get_assistant_message(client, thread_id)
+                    if status == "completed":
+                        assistant_message = get_assistant_message(client, thread_id)
+                    else:
+                        assistant_message = "something went wrong please check the openAI API"
+                    print(f"assistant message is {assistant_message}")
 
                     history = {
                         "thread_id": thread.id,
@@ -145,7 +156,7 @@ def chat(chat_id, input_message):
                         "status": status,
                     }
                     set_redis(chat_id, json.dumps(history))
-                    return message, history
+                    return assistant_message, history
                 else:
                     return "Complaint failed", history
                 
@@ -170,15 +181,19 @@ def chat(chat_id, input_message):
                     )
                     run, status = get_run_status(run, client, thread)
 
-                    message = get_assistant_message(client, thread_id)
+                    if status == "completed":
+                        assistant_message = get_assistant_message(client, thread_id)
+                    else:
+                        assistant_message = "something went wrong please check the openAI API"
 
+                    print(f"assistant message is {assistant_message}")
                     history = {
                         "thread_id": thread_id,
                         "run_id": run.id,
                         "status": status,
                     }
                     set_redis(chat_id, json.dumps(history))
-                    return message, history
+                    return assistant_message, history
                 else:
                     return "Complaint not found", history
         
@@ -207,7 +222,7 @@ def bhashini_text_chat(chat_id, text, lang):
     return response, history
 
 def bhashini_audio_chat(chat_id, audio_file, lang):
-    input_message = bhashini_asr(audio_file, lang)
+    input_message = bhashini_asr(audio_file, lang, "en")
     response, history = chat(chat_id, input_message)
     response = bhashini_translate(response, "en", lang)
     return response, history
