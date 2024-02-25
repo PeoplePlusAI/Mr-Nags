@@ -5,6 +5,7 @@ from utils.digit_utils import (
     search_complaint
 )
 from utils.openai_utils import (
+    create_run,
     create_thread,
     upload_message,
     get_run_status,
@@ -124,7 +125,7 @@ def process_raise_complaint_action(parameters, tool_id, thread_id, run_id):
     required is raise_complaint
     """
     complaint = file_complaint(parameters)
-    if complaint:
+    if "error" not in complaint:
         service_id = complaint.get(
             "ServiceWrappers", []
         )[0].get(
@@ -156,7 +157,13 @@ def process_raise_complaint_action(parameters, tool_id, thread_id, run_id):
         }
         return assistant_message, history
     else:
-        return "Complaint failed", history
+        error = complaint.get("error")
+        history = {
+            "thread_id": thread_id,
+            "run_id": run_id,
+            "status": "failed",
+        }
+        return error, history
     
 def process_search_complaint_action(parameters, tool_id, thread_id, run_id):
     """
@@ -262,6 +269,12 @@ def chat(chat_id, input_message, client=client, assistant_id=assistant_id):
     thread_id = get_or_create_thread_id(client, thread_id)
     history["thread_id"] = thread_id
     print(f"thread id is {thread_id}")
+    if status == "failed":
+        run = client.beta.threads.runs.cancel(
+                thread_id=thread_id,
+                run_id=run_id
+        )
+        status = None
     if status == "completed" or status == None:
         assistant_message, history = gather_complaint_details(
             input_message, history, assistant_id

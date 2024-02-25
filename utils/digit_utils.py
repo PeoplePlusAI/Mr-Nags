@@ -22,10 +22,58 @@ def get_auth_token(data):
     else:
         return None
     
+def validate_locality(data):
+    complaint_data = {
+        "RequestInfo": {
+            "apiId": "Rainmaker",
+            "authToken": data.get("auth_token", ""),
+            "userInfo": {
+                "id": 2079,
+                "uuid": "7e2b023a-2f7f-444c-a48e-78d75911387a",
+                "userName": "7878787878",
+                "name": data.get("name", ""),
+                "mobileNumber": data.get("mobile_number", ""),
+                "emailId": "",
+                "locale": None,
+                "type": "CITIZEN",
+                "roles": [
+                    {
+                        "name": "Citizen",
+                        "code": "CITIZEN",
+                        "tenantId": "pg"
+                    }
+                ],
+                "active": True,
+                "tenantId": "pg",
+                "permanentCity": "pg.citya"
+            },
+            "msgId": "1706156400076|en_IN",
+            "plainAccessRequest": {}
+        }
+    }
+
+    city_code = "pg.cityb"
+    headers = {'Content-Type': 'application/json'}
+    url = f"https://staging.digit.org/egov-location/location/v11/boundarys/_search?hierarchyTypeCode=ADMIN&boundaryType=Locality&tenantId={city_code}"
+
+    response = requests.post(url, headers=headers, data=json.dumps(complaint_data), verify=False)
+
+    if response.status_code == 200:
+        response_data = response.json()
+        localities = {}
+        for locality in response_data["TenantBoundary"][0]["boundary"]:
+            localities[locality["name"].lower()] = locality["code"]
+        source_locality = data.get("locality", "").lower()
+        locality_code = localities.get(source_locality, None)
+        return locality_code
+    else:
+        return None
+    
 
 def file_complaint(data):
+    locality_code = validate_locality(data)
+    print(f"locality code is {locality_code}")
     headers = {'Content-Type': 'application/json'}
-    print(data)
     data = {
     "service": {
         "tenantId": "pg.cityb",
@@ -39,7 +87,7 @@ def file_complaint(data):
             "region": data.get("region", ""),
             "state": data.get("state", ""),
             "locality": {
-                "code": "SUN11",
+                "code": locality_code,
                 "name": data.get("locality", "")
             },
             "geoLocation": {}
@@ -81,10 +129,17 @@ def file_complaint(data):
 
     if response.status_code == 200:
         response_data = response.json()
-        print(response_data)
         return response_data
     else:
-        return None
+        error_code = response.json()["Errors"][0]["code"]
+        if error_code == "NotNull.serviceRequest.service.address.locality.code":
+            return {
+                "error": "Given locality is not valid"
+            }
+        else:
+            return {
+                "error": "UNKNOWN_ERROR"
+            }
     
 def search_complaint(data):
     headers = {'Content-Type': 'application/json'}
