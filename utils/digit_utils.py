@@ -22,6 +22,84 @@ def get_auth_token(data):
     else:
         return None
     
+def validate_city(data):
+    headers = {'Content-Type': 'application/json'}
+    source_city = data.get("city", "")
+    print(data)
+    data = {
+        "RequestInfo": {
+            "apiId": "Rainmaker",
+            "authToken": data.get("auth_token", ""),
+            "userInfo": {
+                "id": 2079,
+                "uuid": "7e2b023a-2f7f-444c-a48e-78d75911387a",
+                "userName": "7878787878",
+                "name": data.get("name", ""),
+                "mobileNumber": data.get("mobile_number", ""),
+                "emailId": "",
+                "locale": None,
+                "type": "CITIZEN",
+                "roles": [
+                    {
+                        "name": "Citizen",
+                        "code": "CITIZEN",
+                        "tenantId": "pg"
+                    }
+                ],
+                "active": True,
+                "tenantId": "pg",
+                "permanentCity": "pg.citya"
+            },
+            "msgId": "1706156400076|en_IN",
+            "plainAccessRequest": {}
+        },
+        "MdmsCriteria": {
+            "tenantId": "pg",
+            "moduleDetails": [
+                {
+                    "moduleName": "tenant",
+                    "masterDetails": [
+                        {
+                            "name": "tenants"
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+
+    url = "https://staging.digit.org/egov-mdms-service/v1/_search"
+
+    response = requests.post(
+        url, 
+        headers=headers, 
+        data=json.dumps(data), 
+        verify=False
+    )
+
+    if response.status_code == 200:
+        response_data = response.json()
+        cities = {}
+        for city in response_data["MdmsRes"]["tenant"]["tenants"]:
+            city_name = city["name"].lower().replace(" ", "")
+            cities[city_name] = city["code"]
+        source_city = source_city.lower().replace(" ", "")
+        code = cities.get(source_city.lower(), None)
+    else:
+        code = None
+    if code:
+        return {
+                "city_code": code
+            }
+    else:
+        cities_str = "\n".join(
+            [city["name"] for city in response_data["MdmsRes"]["tenant"]["tenants"]]
+        )
+        return {
+            "error": f"Service is unavailable in this city. \
+                Choose another city from this list\n  {cities_str}"
+        }
+    
 def validate_locality(data):
     complaint_data = {
         "RequestInfo": {
@@ -52,7 +130,7 @@ def validate_locality(data):
         }
     }
 
-    city_code = "pg.cityb"
+    city_code = data.get("city_code", "")
     headers = {'Content-Type': 'application/json'}
     url = f"https://staging.digit.org/egov-location/location/v11/boundarys/_search?hierarchyTypeCode=ADMIN&boundaryType=Locality&tenantId={city_code}"
 
@@ -62,16 +140,36 @@ def validate_locality(data):
         response_data = response.json()
         localities = {}
         for locality in response_data["TenantBoundary"][0]["boundary"]:
-            localities[locality["name"].lower()] = locality["code"]
+            locality_name = locality["name"].lower().replace(" ", "")
+            localities[locality_name] = locality["code"]
         source_locality = data.get("locality", "").lower()
+        source_locality = source_locality.replace(" ", "").lower()
         locality_code = localities.get(source_locality, None)
-        return locality_code
     else:
-        return None
+        locality_code = None
+    if locality_code:
+        return {
+            "locality_code": locality_code
+        }
+    else:
+        localities_str = "\n".join(
+            [locality["name"] for locality in response_data["TenantBoundary"][0]["boundary"]]
+        )
+        return {
+            "error": f"Service is unavailable in this locality. \
+                Choose another locality from this list {localities_str}"
+        }
     
 
 def file_complaint(data):
+    city_code = validate_city(data)
+    if "error" in city_code:
+        return city_code
+    data["city_code"] = city_code.get("city_code")
     locality_code = validate_locality(data)
+    if "error" in locality_code:
+        return locality_code
+    data["locality_code"] = locality_code.get("locality_code")
     print(f"locality code is {locality_code}")
     headers = {'Content-Type': 'application/json'}
     data = {
@@ -87,7 +185,7 @@ def file_complaint(data):
             "region": data.get("region", ""),
             "state": data.get("state", ""),
             "locality": {
-                "code": locality_code,
+                "code": data.get("locality_code", ""),
                 "name": data.get("locality", "")
             },
             "geoLocation": {}
@@ -131,15 +229,9 @@ def file_complaint(data):
         response_data = response.json()
         return response_data
     else:
-        error_code = response.json()["Errors"][0]["code"]
-        if error_code == "NotNull.serviceRequest.service.address.locality.code":
-            return {
-                "error": "Given locality is not valid"
-            }
-        else:
-            return {
-                "error": "UNKNOWN_ERROR"
-            }
+        return {
+            "error": "Something went wrong please try again later"
+        }
     
 def search_complaint(data):
     headers = {'Content-Type': 'application/json'}
