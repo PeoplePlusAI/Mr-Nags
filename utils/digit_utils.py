@@ -96,8 +96,7 @@ def validate_city(data):
             [city["name"] for city in response_data["MdmsRes"]["tenant"]["tenants"]]
         )
         return {
-            "error": f"Service is unavailable in this city. \
-                Choose another city from this list\n  {cities_str}"
+            "error": f"Service is unavailable in this city. Choose another city from this list\n  {cities_str}"
         }
     
 def validate_locality(data):
@@ -156,8 +155,7 @@ def validate_locality(data):
             [locality["name"] for locality in response_data["TenantBoundary"][0]["boundary"]]
         )
         return {
-            "error": f"Service is unavailable in this locality. \
-                Choose another locality from this list {localities_str}"
+            "error": f"Service is unavailable in this locality. Choose another locality from this list {localities_str}"
         }
     
 
