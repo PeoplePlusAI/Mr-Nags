@@ -49,9 +49,45 @@ client = OpenAI(
 )
 
 assistant = create_assistant(client, assistant_id)
-
 assistant_id = assistant.id
 
+# Import Guard and Validator
+from guardrails import Guard
+from guardrails.hub import ResponseEvaluator
+def guardrail(response):
+    # Initialize The Guard with this validator
+    guard = Guard().use(
+        ResponseEvaluator, llm_callable="gpt-3.5-turbo", on_fail="exception"
+    )
+    
+    # question to check
+    ques = "Does the response help citizens in filing complaints about civic issues like garbage, drainage effectively? When interacting with users, we have to request essential information for filing a complaint such as the nature of the complaint, thier name, details of location, and any specific concerns they have. Does the output floows the conversational style intented to get these details? if not, output false or not passed"
+    
+    try:
+        guard.validate(
+            response,
+            metadata={
+                "validation_question": ques,
+                "pass_on_invalid": True,
+            },
+        )
+        # print(pass_on_invalid)
+    except Exception as e:
+        print(e)
+        return False
+    return True
+
+def moderation_check(response):
+    safe_response = client.moderations.create(input=f"{response}")
+    print(safe_response)
+    print(type(safe_response))
+    output = safe_response.results[0]
+    if not output:
+        return True
+    else:
+        print("flagged for harmful content")
+        print(f"Details are {output}")
+        return False
 
 def get_metadata(chat_id):
     """
@@ -323,3 +359,4 @@ def bhashini_audio_chat(chat_id, audio_file, lang):
     response = bhashini_translate(response, "en", lang)
     audio_content = bhashini_tts(response, lang)
     return audio_content, response, history
+
