@@ -27,7 +27,8 @@ from core.ai import (
     chat, 
     audio_chat, 
     bhashini_text_chat, 
-    bhashini_audio_chat
+    bhashini_audio_chat,
+    guardrail, moderation_check
 )
 from utils.redis_utils import set_redis
 from utils.openai_utils import (
@@ -149,9 +150,20 @@ async def chat_handler(update: Update, context: ContextTypes.DEFAULT_TYPE, text:
         response_en, history = chat(chat_id, text)
     else:
         response, response_en, history = bhashini_text_chat(chat_id,text, lang)
-    if response:
+    
+    # if moderation_check(response):
+    #     await context.bot.send_message(chat_id=chat_id, text=response)
+    # elif moderation_check(response_en):
+    #     await context.bot.send_message(chat_id=chat_id, text=response_en)
+    # else:
+    #     await context.bot.send_message(chat_id=chat_id, text="Please re-input.")
+    
+    if guardrail(response) == True:
         await context.bot.send_message(chat_id=chat_id, text=response)
-    await context.bot.send_message(chat_id=chat_id, text=response_en)
+    elif guardrail(response_en) == True:
+        await context.bot.send_message(chat_id=chat_id, text=response_en)
+    else:
+        await context.bot.send_message(chat_id=chat_id, text="Sorry, I did not understand. Please input your query related to complaint filing only.")
 
 async def talk_handler(update: Update, context: ContextTypes.DEFAULT_TYPE, voice):    
     lang = context.user_data.get('lang')

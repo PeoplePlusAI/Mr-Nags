@@ -6,4 +6,5 @@ python-telegram-bot
 PyYAML
 pydub
 ffmpeg
+guardrails-ai
 
