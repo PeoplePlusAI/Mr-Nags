@@ -204,6 +204,8 @@ def get_tools_to_call(client, thread_id, run_id):
         thread_id=thread_id
     )
     tools_to_call = run.required_action.submit_tool_outputs.tool_calls
+    t = type(tools_to_call)
+    print(f"this is the type of tools_to_call {t}")
     return tools_to_call, run.id, run.status
 
 def get_assistant_message(client, thread_id):
