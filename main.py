@@ -44,18 +44,18 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO
 )
-class BotInitializer:
-    _instance = None
-    run_once = False
+# class BotInitializer:
+#     _instance = None
+#     run_once = False
     
-    def __new__(cls):
-        if cls._instance is None:
-            cls._instance = super(BotInitializer, cls).__new__(cls)
-            cls.run_once = True
-        return cls._instance
+#     def __new__(cls):
+#         if cls._instance is None:
+#             cls._instance = super(BotInitializer, cls).__new__(cls)
+#             cls.run_once = True
+#         return cls._instance
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    BotInitializer()  # To initialize only once
+    # BotInitializer()  # To initialize only once
 
     await context.bot.send_message(
         chat_id=update.effective_chat.id, 
